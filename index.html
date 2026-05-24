@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CHT Visualizer</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0d0f14;
+    --panel-bg:  #13161e;
+    --border:    #1e2330;
+    --border2:   #2a3045;
+    --text:      #c8cfe0;
+    --text-dim:  #5a6380;
+    --accent:    #e8eaf0;
+    --red:       #ff4d6d;
+    --blue:      #4d9fff;
+    --gray:      #505878;
+    --red-dim:   rgba(255,77,109,.15);
+    --blue-dim:  rgba(77,159,255,.15);
+    --input-bg:  #0a0c11;
+    --r: 6px;
+  }
+
+  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; }
+
+  /* ───── layout ───── */
+  #app { display: flex; height: 100vh; }
+
+  /* ───── left panel ───── */
+  #panel {
+    width: 300px; min-width: 260px;
+    background: var(--panel-bg);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+
+  #panel-head {
+    padding: 22px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  #panel-head h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px; font-weight: 700; letter-spacing: .08em;
+    color: var(--accent); text-transform: uppercase;
+  }
+  #panel-head p { font-size: 11px; color: var(--text-dim); margin-top: 4px; letter-spacing: .03em; }
+
+  /* mode toggle */
+  #mode-wrap { padding: 16px 20px 0; flex-shrink: 0; }
+  #mode-wrap label { font-size: 11px; font-weight: 500; color: var(--text-dim); text-transform: uppercase; letter-spacing: .07em; display: block; margin-bottom: 8px; }
+
+  #mode-toggle {
+    display: grid; grid-template-columns: 1fr 1fr;
+    background: var(--input-bg); border: 1px solid var(--border); border-radius: var(--r);
+    overflow: hidden;
+  }
+  .mode-btn {
+    padding: 8px 0; border: none; cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;
+    background: transparent; transition: background .2s, color .2s;
+    letter-spacing: .05em;
+  }
+  .mode-btn.max { color: var(--red); }
+  .mode-btn.min { color: var(--blue); }
+  .mode-btn.active.max { background: var(--red-dim); }
+  .mode-btn.active.min { background: var(--blue-dim); }
+
+  /* add-line form */
+  #add-wrap { padding: 16px 20px 0; flex-shrink: 0; }
+  #add-wrap label { font-size: 11px; font-weight: 500; color: var(--text-dim); text-transform: uppercase; letter-spacing: .07em; display: block; margin-bottom: 8px; }
+
+  .input-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .input-group { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+  .input-group span { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-dim); }
+  .input-group input {
+    background: var(--input-bg); border: 1px solid var(--border2);
+    border-radius: var(--r); color: var(--accent);
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    padding: 7px 10px; width: 100%; outline: none;
+    transition: border-color .2s;
+  }
+  .input-group input:focus { border-color: var(--accent); }
+  .input-group input::placeholder { color: var(--text-dim); }
+
+  #add-btn {
+    width: 100%; padding: 9px; border: none; border-radius: var(--r); cursor: pointer;
+    background: var(--accent); color: var(--bg);
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700;
+    letter-spacing: .06em; text-transform: uppercase;
+    transition: opacity .15s, transform .1s;
+  }
+  #add-btn:hover { opacity: .9; }
+  #add-btn:active { transform: scale(.98); }
+
+  /* lines list */
+  #lines-wrap {
+    flex: 1; overflow-y: auto; padding: 16px 20px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  #lines-wrap::-webkit-scrollbar { width: 4px; }
+  #lines-wrap::-webkit-scrollbar-track { background: transparent; }
+  #lines-wrap::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .lines-label { font-size: 11px; font-weight: 500; color: var(--text-dim); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 4px; flex-shrink: 0; }
+
+  .line-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--input-bg); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 8px 10px;
+    transition: border-color .2s;
+    animation: fadeIn .2s ease;
+  }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(-4px); } to { opacity:1; transform: none; } }
+
+  .line-item.hull-max { border-color: rgba(255,77,109,.4); background: var(--red-dim); }
+  .line-item.hull-min { border-color: rgba(77,159,255,.4); background: var(--blue-dim); }
+
+  .line-expr {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text);
+  }
+  .line-dot {
+    width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; flex-shrink: 0;
+    background: var(--gray);
+  }
+  .line-item.hull-max .line-dot { background: var(--red); }
+  .line-item.hull-min .line-dot { background: var(--blue); }
+
+  .del-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-dim); font-size: 16px; line-height: 1;
+    padding: 0 2px; transition: color .15s;
+  }
+  .del-btn:hover { color: var(--red); }
+
+  #panel-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  #clear-btn {
+    width: 100%; padding: 8px; border: 1px solid var(--border2); border-radius: var(--r); cursor: pointer;
+    background: transparent; color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
+    letter-spacing: .06em; text-transform: uppercase;
+    transition: border-color .2s, color .2s;
+  }
+  #clear-btn:hover { border-color: var(--red); color: var(--red); }
+
+  /* ───── canvas area ───── */
+  #canvas-wrap {
+    flex: 1; position: relative; overflow: hidden;
+    background: var(--bg);
+  }
+
+  canvas { display: block; width: 100%; height: 100%; }
+
+  #info-overlay {
+    position: absolute; top: 16px; right: 16px;
+    background: var(--panel-bg); border: 1px solid var(--border);
+    border-radius: var(--r);
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim);
+    pointer-events: none;
+    min-width: 150px;
+  }
+  .legend-list {
+    display: flex; flex-direction: column; gap: 0;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+  .legend-dot { width: 10px; height: 3px; border-radius: 2px; flex-shrink: 0; }
+
+  #tooltip-panel {
+    padding: 10px 14px;
+    display: none;
+    line-height: 1.7;
+  }
+  #tooltip-panel .tt-line { font-size: 10px; color: var(--text-dim); margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+  #tooltip-panel .tt-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  #tooltip-panel .tt-val { font-size: 12px; color: var(--accent); }
+
+  #mode-badge {
+    position: absolute; top: 16px; left: 16px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    padding: 5px 10px; border-radius: var(--r);
+    pointer-events: none;
+    transition: background .3s, color .3s;
+  }
+  #mode-badge.max { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,77,109,.3); }
+  #mode-badge.min { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(77,159,255,.3); }
+
+
+  #no-lines {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    text-align: center; pointer-events: none;
+  }
+  #no-lines p { font-size: 13px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
+  #no-lines .hint { font-size: 11px; color: var(--border2); margin-top: 6px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- Left panel -->
+  <div id="panel">
+    <div id="panel-head">
+      <h1>CHT Visualizer</h1>
+      <p>Convex Hull Trick</p>
+    </div>
+
+    <div id="mode-wrap">
+      <label>Hull Mode</label>
+      <div id="mode-toggle">
+        <button class="mode-btn max active" onclick="setMode('max')">MAX</button>
+        <button class="mode-btn min"        onclick="setMode('min')">MIN</button>
+      </div>
+    </div>
+
+    <div id="add-wrap">
+      <label style="margin-top:16px; display:block">Add Line  <span style="font-family:JetBrains Mono,monospace; font-weight:400">y = kx + b</span></label>
+      <div class="input-row">
+        <div class="input-group">
+          <span>slope k</span>
+          <input id="inp-k" type="number" step="any" placeholder="0" />
+        </div>
+        <div class="input-group">
+          <span>intercept b</span>
+          <input id="inp-b" type="number" step="any" placeholder="0" />
+        </div>
+      </div>
+      <button id="add-btn" onclick="addLine()">+ Add Line</button>
+    </div>
+
+    <div id="lines-wrap">
+      <div class="lines-label">Lines</div>
+      <!-- items injected here -->
+    </div>
+
+    <div id="panel-footer">
+      <button id="clear-btn" onclick="clearAll()">Clear All</button>
+    </div>
+  </div>
+
+  <!-- Canvas -->
+  <div id="canvas-wrap">
+    <canvas id="cv"></canvas>
+    <div id="mode-badge" class="max">MAX hull</div>
+    <div id="info-overlay">
+      <div class="legend-list">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>MAX hull</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>MIN hull</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--gray)"></div>Inactive</div>
+      </div>
+      <div id="tooltip-panel"></div>
+    </div>
+    <div id="no-lines">
+      <p>No lines yet</p>
+      <div class="hint">Use the panel to add y = kx + b</div>
+    </div>
+  </div>
+</div>
+
+<!-- Load WASM module -->
+<script src="cht.js"></script>
+<script>
+// ─────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────
+let wasmReady = false;
+let currentMode = 'max'; // 'max' | 'min'
+// {k, b} list stored client-side for rendering the sidebar
+let lines = [];
+
+// ─────────────────────────────────────────────
+// WASM init
+// ─────────────────────────────────────────────
+Module.onRuntimeInitialized = function() {
+  wasmReady = true;
+  render();
+};
+
+function withWasm(fn) {
+  if (!wasmReady) return;
+  fn();
+}
+
+// ─────────────────────────────────────────────
+// Canvas setup
+// ─────────────────────────────────────────────
+const canvas = document.getElementById('cv');
+const ctx    = canvas.getContext('2d');
+let W = 0, H = 0;
+
+function resize() {
+  const wrap = document.getElementById('canvas-wrap');
+  W = wrap.clientWidth;
+  H = wrap.clientHeight;
+  canvas.width  = W;
+  canvas.height = H;
+  render();
+}
+window.addEventListener('resize', resize);
+resize();
+
+// world → screen
+function wx(x) { return (x - viewX) * scale + W / 2; }
+function wy(y) { return H / 2 - (y - viewY) * scale; }
+// screen → world
+function sw(sx) { return (sx - W / 2) / scale + viewX; }
+function sh(sy) { return -(sy - H / 2) / scale + viewY; }
+
+// pan & zoom state
+let viewX = 0, viewY = 0, scale = 1;
+
+// ─────────────────────────────────────────────
+// Rendering
+// ─────────────────────────────────────────────
+
+// Cache last segments for tooltip hit-testing
+let lastSegs = [];
+let lastHullSet = new Set(); // keys "k|b" of lines currently in hull
+
+function render() {
+  if (!wasmReady) return;
+
+  ctx.clearRect(0, 0, W, H);
+  drawGrid();
+
+  const noLines = document.getElementById('no-lines');
+  if (lines.length === 0) {
+    noLines.style.display = 'block';
+    lastSegs = [];
+    return;
+  }
+  noLines.style.display = 'none';
+
+  // Use a HUGE world range (100× visible span) so active segments are
+  // always computed correctly regardless of zoom level.
+  const visSpan  = W / scale;            // world units visible on screen
+  const centerWX = sw(W / 2);
+  const wMin = centerWX - visSpan * 100;
+  const wMax = centerWX + visSpan * 100;
+
+  const raw = Module.ccall('visualize', 'string', ['number','number'], [wMin, wMax]);
+  let segs;
+  try { segs = JSON.parse(raw); } catch(e) { return; }
+  lastSegs = segs;
+
+  // Sort: inactive first, active on top
+  segs.sort((a, b) => (a.active ? 1 : 0) - (b.active ? 1 : 0));
+
+  for (const seg of segs) {
+    const x0 = wx(seg.from), y0 = wy(seg.from * seg.k + seg.b);
+    const x1 = wx(seg.to),   y1 = wy(seg.to   * seg.k + seg.b);
+
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+
+    if (!seg.active) {
+      ctx.strokeStyle = 'rgba(80,88,120,0.45)';
+      ctx.lineWidth   = 1.2;
+      ctx.setLineDash([]);
+    } else if (currentMode === 'max') {
+      ctx.strokeStyle = '#ff4d6d';
+      ctx.lineWidth   = 2.5;
+      ctx.setLineDash([]);
+    } else {
+      ctx.strokeStyle = '#4d9fff';
+      ctx.lineWidth   = 2.5;
+      ctx.setLineDash([]);
+    }
+    ctx.stroke();
+  }
+
+  // draw intersection dots on hull
+  drawHullDots(segs);
+
+  updateSidebar(segs);
+}
+
+function drawHullDots(segs) {
+  if (!segs) return;
+  // find transition points between active segments of different lines
+  const active = segs.filter(s => s.active);
+  const color = currentMode === 'max' ? '#ff4d6d' : '#4d9fff';
+  const seen = new Set();
+  for (const s of active) {
+    // draw dot at start of each active segment boundary
+    const pts = [s.from, s.to];
+    for (const px of pts) {
+      const key = px.toFixed(4);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const sx = wx(px);
+      const sy = wy(px * s.k + s.b);
+      ctx.beginPath();
+      ctx.arc(sx, sy, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+    }
+  }
+}
+
+function drawGrid() {
+  ctx.save();
+  // world extent visible
+  const x0w = sw(0), x1w = sw(W);
+  const y0w = sh(H), y1w = sh(0);
+
+  const rawStep = (x1w - x0w) / 10;
+  const mag = Math.pow(10, Math.floor(Math.log10(Math.abs(rawStep))));
+  const step = Math.ceil(rawStep / mag) * mag;
+
+  ctx.strokeStyle = 'rgba(30,35,48,1)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([]);
+
+  // vertical lines
+  const startX = Math.floor(x0w / step) * step;
+  for (let x = startX; x <= x1w + step; x += step) {
+    const sx = wx(x);
+    ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, H); ctx.stroke();
+  }
+  // horizontal lines
+  const startY = Math.floor(y0w / step) * step;
+  for (let y = startY; y <= y1w + step; y += step) {
+    const sy = wy(y);
+    ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(W, sy); ctx.stroke();
+  }
+
+  // ── Desmos-style: axes stick to viewport edges ──
+  const axisColor = 'rgba(50,58,80,1)';
+  ctx.strokeStyle = axisColor;
+  ctx.lineWidth = 1.5;
+
+  // Clamp axis positions so they stay visible on screen
+  const axisY = Math.min(Math.max(wy(0), 0), H);   // x-axis screen Y
+  const axisX = Math.min(Math.max(wx(0), 0), W);    // y-axis screen X
+
+  // x-axis (horizontal) — always drawn if in vertical range
+  if (wy(0) >= -1 && wy(0) <= H + 1) {
+    ctx.beginPath(); ctx.moveTo(0, axisY); ctx.lineTo(W, axisY); ctx.stroke();
+  }
+  // y-axis (vertical) — always drawn if in horizontal range
+  if (wx(0) >= -1 && wx(0) <= W + 1) {
+    ctx.beginPath(); ctx.moveTo(axisX, 0); ctx.lineTo(axisX, H); ctx.stroke();
+  }
+
+  // ── Tick labels that move with the camera (Desmos-style) ──
+  // Labels stick near the axes, but clamp to viewport edges when axes go off-screen
+
+  const MARGIN_TOP = 18;     // minimum px from top edge for x-axis labels
+  const MARGIN_BOTTOM = 8;   // minimum px from bottom edge for x-axis labels
+  const MARGIN_LEFT = 6;     // minimum px from left edge for y-axis labels
+  const MARGIN_RIGHT = 40;   // minimum px from right edge for y-axis labels
+
+  // X-axis tick labels: horizontal position follows the grid, vertical follows the axis
+  ctx.fillStyle = 'rgba(90,99,128,.85)';
+  ctx.font = '10px JetBrains Mono, monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+
+  // Determine the Y position for x-axis labels:
+  // - If axis is on screen: place labels 14px below the axis
+  // - If axis is above viewport: clamp to top edge
+  // - If axis is below viewport: clamp to bottom edge
+  let labelY;
+  if (wy(0) >= 0 && wy(0) <= H) {
+    labelY = wy(0) + 14;
+    // If too close to bottom, move above axis instead
+    if (labelY > H - MARGIN_BOTTOM) {
+      labelY = wy(0) - 18;
+    }
+  } else if (wy(0) < 0) {
+    labelY = MARGIN_TOP;
+  } else {
+    labelY = H - MARGIN_BOTTOM - 12;
+  }
+
+  for (let x = startX; x <= x1w + step; x += step) {
+    if (Math.abs(x) < step * 0.01) continue;
+    const sx = wx(x);
+    if (sx < 20 || sx > W - 20) continue;
+    // Draw a subtle background for readability
+    const txt = fmt(x);
+    const tw = ctx.measureText(txt).width;
+    ctx.fillStyle = 'rgba(13,15,20,0.7)';
+    ctx.fillRect(sx - tw / 2 - 2, labelY - 1, tw + 4, 13);
+    ctx.fillStyle = 'rgba(90,99,128,.85)';
+    ctx.fillText(txt, sx, labelY);
+  }
+
+  // Y-axis tick labels: vertical position follows the grid, horizontal follows the axis
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+
+  // Determine the X position for y-axis labels:
+  // - If axis is on screen: place labels 6px left of the axis
+  // - If axis is left of viewport: clamp to left edge
+  // - If axis is right of viewport: clamp to right edge
+  let labelX;
+  if (wx(0) >= 0 && wx(0) <= W) {
+    labelX = wx(0) - 6;
+    // If too close to left, move to right of axis instead
+    if (labelX < MARGIN_LEFT) {
+      labelX = wx(0) + 6;
+      ctx.textAlign = 'left';
+    }
+  } else if (wx(0) < 0) {
+    labelX = MARGIN_LEFT;
+    ctx.textAlign = 'left';
+  } else {
+    labelX = W - MARGIN_RIGHT;
+  }
+
+  for (let y = startY; y <= y1w + step; y += step) {
+    if (Math.abs(y) < step * 0.01) continue;
+    const sy = wy(y);
+    if (sy < 10 || sy > H - 10) continue;
+    // Draw a subtle background for readability
+    const txt = fmt(y);
+    const tw = ctx.measureText(txt).width;
+    const bgX = ctx.textAlign === 'right' ? labelX - tw - 2 : labelX - 2;
+    ctx.fillStyle = 'rgba(13,15,20,0.7)';
+    ctx.fillRect(bgX, sy - 7, tw + 4, 13);
+    ctx.fillStyle = 'rgba(90,99,128,.85)';
+    ctx.fillText(txt, labelX, sy);
+  }
+
+  ctx.restore();
+}
+
+function fmt(v) {
+  if (Math.abs(v) >= 1000) return v.toFixed(0);
+  if (Math.abs(v) >= 100)  return v.toFixed(1);
+  return v.toFixed(2).replace(/\.?0+$/, '');
+}
+
+// ─────────────────────────────────────────────
+// Hull computation (mirrors C++ logic in JS)
+// ─────────────────────────────────────────────
+function lineIntersection(a, b) {
+  return (a.b - b.b) / (b.k - a.k);
+}
+
+function computeMaxHull(inputLines) {
+  if (inputLines.length === 0) return [];
+  const copy = inputLines.slice().sort((a, b) => {
+    if (a.k !== b.k) return a.k - b.k;
+    return a.b - b.b;
+  });
+  const hull = [];
+  for (const x of copy) {
+    while (hull.length > 0 && hull[hull.length - 1].k === x.k)
+      hull.pop();
+    while (hull.length >= 2) {
+      const last = hull[hull.length - 1];
+      const comparing = hull[hull.length - 2];
+      if (lineIntersection(comparing, x) <= lineIntersection(comparing, last))
+        hull.pop();
+      else break;
+    }
+    hull.push(x);
+  }
+  return hull;
+}
+
+function computeMinHull(inputLines) {
+  if (inputLines.length === 0) return [];
+  const copy = inputLines.slice().sort((a, b) => {
+    if (a.k !== b.k) return a.k - b.k;
+    return a.b - b.b;
+  });
+  copy.reverse();
+  const hull = [];
+  for (const x of copy) {
+    while (hull.length > 0 && hull[hull.length - 1].k === x.k)
+      hull.pop();
+    while (hull.length >= 2) {
+      const last = hull[hull.length - 1];
+      const comparing = hull[hull.length - 2];
+      if (lineIntersection(comparing, x) <= lineIntersection(comparing, last))
+        hull.pop();
+      else break;
+    }
+    hull.push(x);
+  }
+  return hull;
+}
+
+function computeHullSet() {
+  const hullSet = new Set();
+  if (lines.length === 0) return hullSet;
+  const hull = currentMode === 'max' ? computeMaxHull(lines) : computeMinHull(lines);
+  for (const l of hull) {
+    hullSet.add(`${l.k}|${l.b}`);
+  }
+  return hullSet;
+}
+
+// ─────────────────────────────────────────────
+// Sidebar: colour items by hull membership
+// ─────────────────────────────────────────────
+function updateSidebar(segs) {
+  // Compute hull membership directly from the lines array,
+  // not from segment active flags (which depend on the current
+  // view range and can miss lines when zoomed in).
+  const hullSet = computeHullSet();
+  lastHullSet = hullSet;
+  const items = document.querySelectorAll('.line-item');
+  items.forEach(item => {
+    const k = item.dataset.k, b = item.dataset.b;
+    item.classList.remove('hull-max', 'hull-min');
+    if (hullSet.has(`${k}|${b}`)) {
+      item.classList.add(currentMode === 'max' ? 'hull-max' : 'hull-min');
+    }
+  });
+}
+
+// ─────────────────────────────────────────────
+// Controls
+// ─────────────────────────────────────────────
+function setMode(mode) {
+  if (currentMode === mode) return;
+  currentMode = mode;
+  withWasm(() => Module._switchMinMax());
+
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    b.classList.toggle('active', b.classList.contains(mode));
+  });
+  const badge = document.getElementById('mode-badge');
+  badge.className = 'max' === mode ? 'max' : 'min';
+  badge.textContent = mode === 'max' ? 'MAX hull' : 'MIN hull';
+
+  render();
+}
+
+function addLine() {
+  const k = parseFloat(document.getElementById('inp-k').value) || 0;
+  const b = parseFloat(document.getElementById('inp-b').value) || 0;
+
+  lines.push({ k, b });
+  withWasm(() => Module._addLine(k, b));
+
+  renderSidebarItem({ k, b });
+  document.getElementById('inp-k').value = '';
+  document.getElementById('inp-b').value = '';
+  document.getElementById('inp-k').focus();
+
+  render();
+}
+
+function deleteLine(k, b) {
+  const idx = lines.findIndex(l => l.k === k && l.b === b);
+  if (idx !== -1) lines.splice(idx, 1);
+  withWasm(() => Module._deleteLine(k, b));
+
+  const item = document.querySelector(`.line-item[data-k="${k}"][data-b="${b}"]`);
+  if (item) {
+    item.style.opacity = '0';
+    item.style.transform = 'translateX(-10px)';
+    item.style.transition = 'opacity .15s, transform .15s';
+    setTimeout(() => item.remove(), 160);
+  }
+  render();
+}
+
+function clearAll() {
+  lines = [];
+  withWasm(() => Module._clearAll());
+  // re-init mode
+  if (currentMode === 'min') {
+    Module._switchMinMax();
+    currentMode = 'max';
+    setMode('max');
+  }
+  document.getElementById('lines-wrap').innerHTML = '<div class="lines-label">Lines</div>';
+  render();
+}
+
+function renderSidebarItem(line) {
+  const wrap = document.getElementById('lines-wrap');
+  const el = document.createElement('div');
+  el.className = 'line-item';
+  el.dataset.k = line.k;
+  el.dataset.b = line.b;
+
+  const sign = line.b >= 0 ? '+' : '−';
+  const absB = Math.abs(line.b);
+  const kStr = line.k === 0 ? '0' : (line.k === 1 ? '' : line.k === -1 ? '−' : fmt(line.k));
+  const expr = `y = ${kStr}x ${sign} ${fmt(absB)}`;
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center">
+      <div class="line-dot"></div>
+      <span class="line-expr">${expr}</span>
+    </div>
+    <button class="del-btn" title="Remove" onclick="deleteLine(${line.k}, ${line.b})">×</button>
+  `;
+  wrap.appendChild(el);
+}
+
+// ─────────────────────────────────────────────
+// Pan & Zoom
+// ─────────────────────────────────────────────
+let dragging = false, lastMX = 0, lastMY = 0;
+
+canvas.addEventListener('mousedown', e => {
+  dragging = true; lastMX = e.clientX; lastMY = e.clientY;
+  canvas.style.cursor = 'grabbing';
+});
+window.addEventListener('mouseup', () => { dragging = false; canvas.style.cursor = 'default'; });
+window.addEventListener('mousemove', e => {
+  if (dragging) {
+    const dx = e.clientX - lastMX, dy = e.clientY - lastMY;
+    viewX -= dx / scale; viewY += dy / scale;
+    lastMX = e.clientX; lastMY = e.clientY;
+    render();
+  }
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  if (mx < 0 || mx > W || my < 0 || my > H) { hideTooltip(); return; }
+
+  const wx_ = sw(mx), wy_ = sh(my);
+  // ── tooltip: find closest segment to mouse ──
+  // Only consider segments whose x-range contains the cursor,
+  // so the active/grey status reflects the line's state at THIS x.
+  const HIT_PX = 10; // pixels
+  let best = null, bestDist = HIT_PX;
+
+  for (const seg of lastSegs) {
+    // Skip segments whose x-range does not contain the cursor
+    if (wx_ < seg.from - 1e-9 || wx_ > seg.to + 1e-9) continue;
+
+    // y value of this line at cursor x
+    const lineY = seg.k * wx_ + seg.b;
+    const lineScreenY = wy(lineY);
+    const dist = Math.abs(my - lineScreenY);
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = seg;
+    } else if (dist < bestDist + 0.5 && seg.active && best && !best.active) {
+      // At intersection points, prefer the active segment when distances are nearly equal
+      bestDist = dist;
+      best = seg;
+    }
+  }
+
+  if (best) {
+    const lineY = best.k * wx_ + best.b;
+    showTooltip(best, wx_, lineY);
+  } else {
+    hideTooltip();
+  }
+});
+
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const factor = e.deltaY > 0 ? 0.9 : 1.1;
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  // zoom toward cursor
+  const wx_ = sw(mx), wy_ = sh(my);
+  scale *= factor;
+  viewX = wx_ - (mx - W/2) / scale;
+  viewY = wy_ + (my - H/2) / scale;
+  render();
+}, { passive: false });
+
+// ─────────────────────────────────────────────
+// Tooltip
+// ─────────────────────────────────────────────
+const tooltipPanel = document.getElementById('tooltip-panel');
+
+function showTooltip(seg, x, y) {
+  // Color based on whether THIS segment is active at the cursor x,
+  // not on overall hull membership. This correctly shows grey when
+  // hovering over the inactive (grey) portion of a hull line.
+  const modeColor = currentMode === 'max' ? '#ff4d6d' : '#4d9fff';
+  const dotColor  = seg.active ? modeColor : '#505878';
+  const sign = seg.b >= 0 ? '+' : '−';
+  const expr = `y = ${fmt(seg.k)}x ${sign} ${fmt(Math.abs(seg.b))}`;
+
+  tooltipPanel.innerHTML = `
+    <div class="tt-line"><div class="tt-dot" style="background:${dotColor}"></div>${expr}</div>
+    <div class="tt-val">x = <b>${fmt(x)}</b></div>
+    <div class="tt-val">y = <b>${fmt(y)}</b></div>
+  `;
+  tooltipPanel.style.display = 'block';
+}
+
+function hideTooltip() {
+  tooltipPanel.style.display = 'none';
+}
+
+canvas.addEventListener('mouseleave', hideTooltip);
+
+// keyboard: Enter to add
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (document.activeElement === document.getElementById('inp-k') || document.activeElement === document.getElementById('inp-b'))) {
+    addLine();
+  }
+});
+</script>
+</body>
+</html>
