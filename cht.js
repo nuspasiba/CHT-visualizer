@@ -1837,6 +1837,8 @@ var _addLine = Module['_addLine'] = makeInvalidEarlyAccess('_addLine');
 var _deleteLine = Module['_deleteLine'] = makeInvalidEarlyAccess('_deleteLine');
 var _switchMinMax = Module['_switchMinMax'] = makeInvalidEarlyAccess('_switchMinMax');
 var _clearAll = Module['_clearAll'] = makeInvalidEarlyAccess('_clearAll');
+var _addDot = Module['_addDot'] = makeInvalidEarlyAccess('_addDot');
+var _remDot = Module['_remDot'] = makeInvalidEarlyAccess('_remDot');
 var _visualize = Module['_visualize'] = makeInvalidEarlyAccess('_visualize');
 var _fflush = makeInvalidEarlyAccess('_fflush');
 var _strerror = makeInvalidEarlyAccess('_strerror');
@@ -1856,6 +1858,8 @@ function assignWasmExports(wasmExports) {
   assert(typeof wasmExports['deleteLine'] != 'undefined', 'missing Wasm export: deleteLine');
   assert(typeof wasmExports['switchMinMax'] != 'undefined', 'missing Wasm export: switchMinMax');
   assert(typeof wasmExports['clearAll'] != 'undefined', 'missing Wasm export: clearAll');
+  assert(typeof wasmExports['addDot'] != 'undefined', 'missing Wasm export: addDot');
+  assert(typeof wasmExports['remDot'] != 'undefined', 'missing Wasm export: remDot');
   assert(typeof wasmExports['visualize'] != 'undefined', 'missing Wasm export: visualize');
   assert(typeof wasmExports['fflush'] != 'undefined', 'missing Wasm export: fflush');
   assert(typeof wasmExports['strerror'] != 'undefined', 'missing Wasm export: strerror');
@@ -1872,6 +1876,8 @@ function assignWasmExports(wasmExports) {
   _deleteLine = Module['_deleteLine'] = createExportWrapper('deleteLine', 2);
   _switchMinMax = Module['_switchMinMax'] = createExportWrapper('switchMinMax', 0);
   _clearAll = Module['_clearAll'] = createExportWrapper('clearAll', 0);
+  _addDot = Module['_addDot'] = createExportWrapper('addDot', 1);
+  _remDot = Module['_remDot'] = createExportWrapper('remDot', 1);
   _visualize = Module['_visualize'] = createExportWrapper('visualize', 2);
   _fflush = createExportWrapper('fflush', 1);
   _strerror = createExportWrapper('strerror', 1);

@@ -18,9 +18,13 @@
     --accent:    #e8eaf0;
     --red:       #ff4d6d;
     --blue:      #4d9fff;
+    --green:     #4dff91;
+    --orange:    #ffaa4d;
     --gray:      #505878;
     --red-dim:   rgba(255,77,109,.15);
     --blue-dim:  rgba(77,159,255,.15);
+    --green-dim: rgba(77,255,145,.15);
+    --orange-dim:rgba(255,170,77,.15);
     --input-bg:  #0a0c11;
     --r: 6px;
   }
@@ -39,40 +43,36 @@
     overflow: hidden;
   }
 
-  #panel-head {
-    padding: 22px 20px 16px;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-  #panel-head h1 {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 14px; font-weight: 700; letter-spacing: .08em;
-    color: var(--accent); text-transform: uppercase;
-  }
-  #panel-head p { font-size: 11px; color: var(--text-dim); margin-top: 4px; letter-spacing: .03em; }
+  /* ───── mode toggle ───── */
+  #mode-wrap { padding: 10px 20px 10px; flex-shrink: 0; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+  .mode-row { display: flex; gap: 8px; align-items: center; }
+  .mode-row-label { font-size: 9px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: .1em; min-width: 32px; }
 
-  /* mode toggle */
-  #mode-wrap { padding: 16px 20px 0; flex-shrink: 0; }
-  #mode-wrap label { font-size: 11px; font-weight: 500; color: var(--text-dim); text-transform: uppercase; letter-spacing: .07em; display: block; margin-bottom: 8px; }
-
-  #mode-toggle {
-    display: grid; grid-template-columns: 1fr 1fr;
+  #app-mode-toggle, #mode-toggle {
+    flex: 1; display: grid; grid-template-columns: 1fr 1fr;
     background: var(--input-bg); border: 1px solid var(--border); border-radius: var(--r);
     overflow: hidden;
   }
-  .mode-btn {
-    padding: 8px 0; border: none; cursor: pointer;
-    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;
+  .app-btn, .mode-btn {
+    padding: 6px 0; border: none; cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
     background: transparent; transition: background .2s, color .2s;
     letter-spacing: .05em;
   }
+  .app-btn { color: var(--text-dim); }
+  .app-btn.active { color: var(--orange); background: var(--orange-dim); }
   .mode-btn.max { color: var(--red); }
   .mode-btn.min { color: var(--blue); }
   .mode-btn.active.max { background: var(--red-dim); }
   .mode-btn.active.min { background: var(--blue-dim); }
 
-  /* add-line form */
-  #add-wrap { padding: 16px 20px 0; flex-shrink: 0; }
+  /* ═══════════════════════════════════════════════
+     MANUAL PANEL
+     ═══════════════════════════════════════════════ */
+  #manual-panel { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+
+  /* add-line form — fixed */
+  #add-wrap { padding: 12px 20px 8px; flex-shrink: 0; border-bottom: 1px solid var(--border); }
   #add-wrap label { font-size: 11px; font-weight: 500; color: var(--text-dim); text-transform: uppercase; letter-spacing: .07em; display: block; margin-bottom: 8px; }
 
   .input-row { display: flex; gap: 8px; margin-bottom: 8px; }
@@ -98,10 +98,28 @@
   #add-btn:hover { opacity: .9; }
   #add-btn:active { transform: scale(.98); }
 
-  /* lines list */
+  /* add-dot form — fixed */
+  #add-dot-wrap { padding: 10px 20px 8px; flex-shrink: 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  #add-dot-wrap label { font-size: 11px; font-weight: 500; color: var(--text-dim); text-transform: uppercase; letter-spacing: .07em; display: block; margin-bottom: 8px; }
+
+  .dot-input-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-end; }
+  .dot-input-row .input-group { flex: 1; }
+
+  #add-dot-btn {
+    width: 100%; padding: 9px; border: none; border-radius: var(--r); cursor: pointer;
+    background: var(--green); color: var(--bg);
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700;
+    letter-spacing: .06em; text-transform: uppercase;
+    transition: opacity .15s, transform .1s;
+  }
+  #add-dot-btn:hover { opacity: .9; }
+  #add-dot-btn:active { transform: scale(.98); }
+
+  /* lines list — scrollable */
   #lines-wrap {
-    flex: 1; overflow-y: auto; padding: 16px 20px;
+    overflow-y: auto; padding: 4px 20px 8px;
     display: flex; flex-direction: column; gap: 6px;
+    min-height: 0; flex: 1;
   }
   #lines-wrap::-webkit-scrollbar { width: 4px; }
   #lines-wrap::-webkit-scrollbar-track { background: transparent; }
@@ -121,15 +139,33 @@
   .line-item.hull-max { border-color: rgba(255,77,109,.4); background: var(--red-dim); }
   .line-item.hull-min { border-color: rgba(77,159,255,.4); background: var(--blue-dim); }
 
-  .line-expr {
-    font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text);
-  }
-  .line-dot {
-    width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; flex-shrink: 0;
-    background: var(--gray);
-  }
+  .line-expr { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text); }
+  .line-dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; flex-shrink: 0; background: var(--gray); }
   .line-item.hull-max .line-dot { background: var(--red); }
   .line-item.hull-min .line-dot { background: var(--blue); }
+
+  /* dots list — scrollable */
+  #dots-wrap {
+    overflow-y: auto; padding: 4px 20px 8px;
+    display: flex; flex-direction: column; gap: 6px;
+    min-height: 0; flex: 1;
+  }
+  #dots-wrap::-webkit-scrollbar { width: 4px; }
+  #dots-wrap::-webkit-scrollbar-track { background: transparent; }
+  #dots-wrap::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .dot-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--input-bg); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 8px 10px;
+    transition: border-color .2s;
+    animation: fadeIn .2s ease;
+  }
+  .dot-item.active-dot { border-color: rgba(77,255,145,.4); background: var(--green-dim); }
+
+  .dot-expr { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text); }
+  .dot-marker { width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; flex-shrink: 0; background: var(--gray); }
+  .dot-item.active-dot .dot-marker { background: var(--green); }
 
   .del-btn {
     background: none; border: none; cursor: pointer;
@@ -151,6 +187,161 @@
     transition: border-color .2s, color .2s;
   }
   #clear-btn:hover { border-color: var(--red); color: var(--red); }
+
+  /* ═══════════════════════════════════════════════
+     DP PANEL
+     ═══════════════════════════════════════════════ */
+  #dp-panel { display: none; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
+
+  /* DP scrollable content */
+  #dp-scroll { flex: 1; overflow-y: auto; min-height: 0; }
+  #dp-scroll::-webkit-scrollbar { width: 4px; }
+  #dp-scroll::-webkit-scrollbar-track { background: transparent; }
+  #dp-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* collapsible sections */
+  .dp-section { border-bottom: 1px solid var(--border); }
+  .dp-section-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 20px; cursor: pointer; user-select: none;
+    font-size: 11px; font-weight: 600; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: .07em;
+    transition: color .15s;
+  }
+  .dp-section-header:hover { color: var(--text); }
+  .dp-section-header .dp-arrow { font-size: 10px; transition: transform .2s; }
+  .dp-section.collapsed .dp-arrow { transform: rotate(-90deg); }
+  .dp-section-body { padding: 0 20px 12px; }
+  .dp-section.collapsed .dp-section-body { display: none; }
+
+  /* array items */
+  .dp-array-item {
+    background: var(--input-bg); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 8px 10px; margin-bottom: 6px;
+    animation: fadeIn .2s ease;
+  }
+  .dp-array-row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+  .dp-arr-name {
+    width: 56px; background: var(--panel-bg); border: 1px solid var(--border2);
+    border-radius: var(--r); color: var(--accent);
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;
+    padding: 5px 8px; outline: none;
+  }
+  .dp-arr-name:focus { border-color: var(--accent); }
+  .dp-arr-type {
+    flex: 1; background: var(--panel-bg); border: 1px solid var(--border2);
+    border-radius: var(--r); color: var(--accent);
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    padding: 5px 6px; outline: none; cursor: pointer;
+    appearance: none; -webkit-appearance: none;
+  }
+
+  .dp-arr-values {
+    background: var(--panel-bg); border: 1px solid var(--border2);
+    border-radius: var(--r); color: var(--accent);
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    padding: 5px 8px; width: 100%; outline: none;
+  }
+  .dp-arr-values:focus { border-color: var(--accent); }
+  .dp-arr-values::placeholder { color: var(--text-dim); }
+  .dp-arr-base-label { font-size: 10px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; margin-bottom: 2px; }
+
+  .dp-add-array-btn {
+    width: 100%; padding: 7px; border: 1px dashed var(--border2); border-radius: var(--r);
+    background: transparent; color: var(--text-dim); cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    transition: border-color .2s, color .2s;
+  }
+  .dp-add-array-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+  /* formula inputs */
+  .dp-formula-row {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  }
+  .dp-formula-row label {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
+    color: var(--text-dim); min-width: 56px; flex-shrink: 0;
+  }
+  .dp-formula-input {
+    flex: 1; background: var(--input-bg); border: 1px solid var(--border2);
+    border-radius: var(--r); color: var(--accent);
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    padding: 6px 8px; outline: none;
+    transition: border-color .2s;
+  }
+  .dp-formula-input:focus { border-color: var(--accent); }
+  .dp-formula-input::placeholder { color: var(--text-dim); }
+  .dp-formula-input.error { border-color: var(--red); }
+
+  /* interval row */
+  .dp-interval-row {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 6px;
+  }
+  .dp-interval-row label {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--text-dim); flex-shrink: 0;
+  }
+  .dp-interval-input {
+    width: 50px; background: var(--input-bg); border: 1px solid var(--border2);
+    border-radius: var(--r); color: var(--accent);
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    padding: 5px 8px; outline: none; text-align: center;
+  }
+  .dp-interval-input:focus { border-color: var(--accent); }
+
+  /* step controls */
+  #dp-controls {
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 4px; padding: 10px 20px; flex-shrink: 0;
+    border-top: 1px solid var(--border);
+  }
+  .dp-ctrl-btn {
+    padding: 7px 0; border: 1px solid var(--border2); border-radius: var(--r);
+    background: transparent; color: var(--text); cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+    transition: border-color .2s, color .2s, background .2s;
+  }
+  .dp-ctrl-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .dp-ctrl-btn:active { transform: scale(.96); }
+  .dp-ctrl-btn.playing { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+
+  /* dp results */
+  .dp-results-wrap {
+    padding: 8px 20px; flex: 1; min-height: 0; overflow-y: auto;
+  }
+  .dp-results-wrap::-webkit-scrollbar { width: 4px; }
+  .dp-results-wrap::-webkit-scrollbar-track { background: transparent; }
+  .dp-results-wrap::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .dp-result-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 3px 8px; border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--text-dim); margin-bottom: 2px;
+  }
+  .dp-result-item.computed { color: var(--text); }
+  .dp-result-item.current { color: var(--green); background: var(--green-dim); }
+  .dp-result-idx { color: var(--text-dim); }
+  .dp-result-val { font-weight: 600; }
+
+  /* dp step log */
+  .dp-log {
+    padding: 8px 20px 12px; flex-shrink: 0;
+    border-top: 1px solid var(--border);
+  }
+  .dp-log-title { font-size: 9px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
+  .dp-log-content {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--text-dim); line-height: 1.7;
+    max-height: 120px; overflow-y: auto;
+  }
+  .dp-log-content::-webkit-scrollbar { width: 3px; }
+  .dp-log-content::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  .dp-log-line { margin-bottom: 2px; }
+  .dp-log-line .hl-query { color: var(--green); }
+  .dp-log-line .hl-val { color: var(--accent); }
+  .dp-log-line .hl-line { color: var(--orange); }
 
   /* ───── canvas area ───── */
   #canvas-wrap {
@@ -196,54 +387,185 @@
   #mode-badge.max { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,77,109,.3); }
   #mode-badge.min { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(77,159,255,.3); }
 
-
   #no-lines {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     text-align: center; pointer-events: none;
   }
   #no-lines p { font-size: 13px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
   #no-lines .hint { font-size: 11px; color: var(--border2); margin-top: 6px; }
+
+  /* step-info overlay on canvas */
+  #step-info {
+    position: absolute; bottom: 16px; left: 16px;
+    background: var(--panel-bg); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 10px 14px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--text); max-width: 320px; display: none;
+    pointer-events: none;
+  }
+  #step-info .si-step { color: var(--green); font-weight: 600; margin-bottom: 6px; }
+  #step-info .si-line { color: var(--text-dim); line-height: 1.8; }
+  #step-info .si-val { color: var(--accent); font-weight: 600; }
+  #step-info .si-query { color: var(--green); }
+  #step-info .si-addline { color: var(--orange); }
+  #step-info .si-hr { border-top: 1px solid var(--border); margin: 4px 0; }
 </style>
 </head>
 <body>
 <div id="app">
   <!-- Left panel -->
   <div id="panel">
-    <div id="panel-head">
-      <h1>CHT Visualizer</h1>
-      <p>Convex Hull Trick</p>
-    </div>
-
+    <!-- ═══ Mode toggles ═══ -->
     <div id="mode-wrap">
-      <label>Hull Mode</label>
-      <div id="mode-toggle">
-        <button class="mode-btn max active" onclick="setMode('max')">MAX</button>
-        <button class="mode-btn min"        onclick="setMode('min')">MIN</button>
+      <div class="mode-row">
+        <span class="mode-row-label">mode</span>
+        <div id="app-mode-toggle">
+          <button class="app-btn active" id="btn-manual" onclick="setAppMode('manual')">MANUAL</button>
+          <button class="app-btn" id="btn-dp" onclick="setAppMode('dp')">DP</button>
+        </div>
+      </div>
+      <div class="mode-row">
+        <span class="mode-row-label">hull</span>
+        <div id="mode-toggle">
+          <button class="mode-btn max active" onclick="setMode('max')">MAX</button>
+          <button class="mode-btn min"        onclick="setMode('min')">MIN</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ MANUAL panel ═══ -->
+    <div id="manual-panel">
+      <!-- Lines: fixed form + scrollable list -->
+      <div id="add-wrap">
+        <label>Add Line  <span style="font-family:JetBrains Mono,monospace; font-weight:400">y = kx + b</span></label>
+        <div class="input-row">
+          <div class="input-group">
+            <span>slope k</span>
+            <input id="inp-k" type="number" step="any" placeholder="0" />
+          </div>
+          <div class="input-group">
+            <span>intercept b</span>
+            <input id="inp-b" type="number" step="any" placeholder="0" />
+          </div>
+        </div>
+        <button id="add-btn" onclick="addLine()">+ Add Line</button>
+      </div>
+
+      <div id="lines-wrap">
+        <div class="lines-label">Lines</div>
+      </div>
+
+      <!-- Dots: fixed form + scrollable list -->
+      <div id="add-dot-wrap">
+        <label>Query Point  <span style="font-family:JetBrains Mono,monospace; font-weight:400">f(x) = ?</span></label>
+        <div class="dot-input-row">
+          <div class="input-group">
+            <span>x</span>
+            <input id="inp-x" type="number" step="any" placeholder="0" />
+          </div>
+        </div>
+        <button id="add-dot-btn" onclick="addDot()">+ Add Point</button>
+      </div>
+
+      <div id="dots-wrap">
+        <div class="lines-label">Points</div>
+      </div>
+
+      <div id="panel-footer">
+        <button id="clear-btn" onclick="clearAll()">Clear All</button>
       </div>
     </div>
 
-    <div id="add-wrap">
-      <label style="margin-top:16px; display:block">Add Line  <span style="font-family:JetBrains Mono,monospace; font-weight:400">y = kx + b</span></label>
-      <div class="input-row">
-        <div class="input-group">
-          <span>slope k</span>
-          <input id="inp-k" type="number" step="any" placeholder="0" />
+    <!-- ═══ DP panel ═══ -->
+    <div id="dp-panel">
+      <div id="dp-scroll">
+        <!-- Arrays -->
+        <div class="dp-section" id="sec-arrays">
+          <div class="dp-section-header" onclick="toggleDpSection('sec-arrays')">
+            <span>Arrays</span><span class="dp-arrow">&#9660;</span>
+          </div>
+          <div class="dp-section-body" id="dp-arrays-list">
+            <!-- array items injected here -->
+            <button class="dp-add-array-btn" onclick="addDPArray()">+ Add Array</button>
+          </div>
         </div>
-        <div class="input-group">
-          <span>intercept b</span>
-          <input id="inp-b" type="number" step="any" placeholder="0" />
+
+        <!-- Formula -->
+        <div class="dp-section" id="sec-formula">
+          <div class="dp-section-header" onclick="toggleDpSection('sec-formula')">
+            <span>Formula</span><span class="dp-arrow">&#9660;</span>
+          </div>
+          <div class="dp-section-body">
+            <div class="dp-formula-row">
+              <label>queryX</label>
+              <input class="dp-formula-input" id="dp-queryX" placeholder="a[i]" oninput="validateFormula(this)"/>
+            </div>
+            <div class="dp-formula-row">
+              <label>add</label>
+              <input class="dp-formula-input" id="dp-add" placeholder="0" value="0" oninput="validateFormula(this)"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Line -->
+        <div class="dp-section" id="sec-line">
+          <div class="dp-section-header" onclick="toggleDpSection('sec-line')">
+            <span>Line  <span style="font-weight:400;font-size:10px;color:var(--text-dim)">y = kx + b</span></span>
+            <span class="dp-arrow">&#9660;</span>
+          </div>
+          <div class="dp-section-body">
+            <div class="dp-formula-row">
+              <label>k</label>
+              <input class="dp-formula-input" id="dp-line-k" placeholder="dp[j]" oninput="validateFormula(this)"/>
+            </div>
+            <div class="dp-formula-row">
+              <label>b</label>
+              <input class="dp-formula-input" id="dp-line-b" placeholder="b[j]" oninput="validateFormula(this)"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interval -->
+        <div class="dp-section" id="sec-interval">
+          <div class="dp-section-header" onclick="toggleDpSection('sec-interval')">
+            <span>Interval</span><span class="dp-arrow">&#9660;</span>
+          </div>
+          <div class="dp-section-body">
+            <div class="dp-interval-row">
+              <label>i from</label>
+              <input class="dp-interval-input" id="dp-from" type="number" value="1"/>
+              <label>to</label>
+              <input class="dp-interval-input" id="dp-to" type="number" value="4"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div class="dp-section" id="sec-results">
+          <div class="dp-section-header" onclick="toggleDpSection('sec-results')">
+            <span>Results</span><span class="dp-arrow">&#9660;</span>
+          </div>
+          <div class="dp-section-body">
+            <div id="dp-results-list">
+              <div style="font-size:11px;color:var(--text-dim);font-family:'JetBrains Mono',monospace">No results yet</div>
+            </div>
+          </div>
         </div>
       </div>
-      <button id="add-btn" onclick="addLine()">+ Add Line</button>
-    </div>
 
-    <div id="lines-wrap">
-      <div class="lines-label">Lines</div>
-      <!-- items injected here -->
-    </div>
+      <!-- Step log -->
+      <div class="dp-log" id="dp-log-wrap">
+        <div class="dp-log-title">Log</div>
+        <div class="dp-log-content" id="dp-log-content"></div>
+      </div>
 
-    <div id="panel-footer">
-      <button id="clear-btn" onclick="clearAll()">Clear All</button>
+      <!-- Controls -->
+      <div id="dp-controls">
+        <button class="dp-ctrl-btn" onclick="dpStepBack()" title="Previous step">&#9664; Prev</button>
+        <button class="dp-ctrl-btn" onclick="dpStepForward()" title="Next step">Step &#9654;</button>
+        <button class="dp-ctrl-btn" id="dp-auto-btn" onclick="dpAutoPlay()" title="Auto play">&#9654; Auto</button>
+        <button class="dp-ctrl-btn" onclick="dpReset()" title="Reset">Reset</button>
+      </div>
     </div>
   </div>
 
@@ -256,6 +578,7 @@
         <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>MAX hull</div>
         <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>MIN hull</div>
         <div class="legend-item"><div class="legend-dot" style="background:var(--gray)"></div>Inactive</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green); width:8px; height:8px; border-radius:50%"></div>Query pt</div>
       </div>
       <div id="tooltip-panel"></div>
     </div>
@@ -263,6 +586,7 @@
       <p>No lines yet</p>
       <div class="hint">Use the panel to add y = kx + b</div>
     </div>
+    <div id="step-info"></div>
   </div>
 </div>
 
@@ -274,8 +598,9 @@
 // ─────────────────────────────────────────────
 let wasmReady = false;
 let currentMode = 'max'; // 'max' | 'min'
-// {k, b} list stored client-side for rendering the sidebar
-let lines = [];
+let appMode = 'manual';  // 'manual' | 'dp'
+let lines = [];   // {k, b}
+let dots  = [];   // {x}
 
 // ─────────────────────────────────────────────
 // WASM init
@@ -322,9 +647,9 @@ let viewX = 0, viewY = 0, scale = 1;
 // Rendering
 // ─────────────────────────────────────────────
 
-// Cache last segments for tooltip hit-testing
 let lastSegs = [];
-let lastHullSet = new Set(); // keys "k|b" of lines currently in hull
+let lastPoints = [];
+let lastHullSet = new Set();
 
 function render() {
   if (!wasmReady) return;
@@ -333,24 +658,27 @@ function render() {
   drawGrid();
 
   const noLines = document.getElementById('no-lines');
-  if (lines.length === 0) {
+  if (lines.length === 0 && dpEngine.addedLines.length === 0) {
     noLines.style.display = 'block';
     lastSegs = [];
+    lastPoints = [];
     return;
   }
   noLines.style.display = 'none';
 
-  // Use a HUGE world range (100× visible span) so active segments are
-  // always computed correctly regardless of zoom level.
-  const visSpan  = W / scale;            // world units visible on screen
+  const visSpan  = W / scale;
   const centerWX = sw(W / 2);
   const wMin = centerWX - visSpan * 100;
   const wMax = centerWX + visSpan * 100;
 
   const raw = Module.ccall('visualize', 'string', ['number','number'], [wMin, wMax]);
-  let segs;
-  try { segs = JSON.parse(raw); } catch(e) { return; }
+  let data;
+  try { data = JSON.parse(raw); } catch(e) { return; }
+
+  const segs = data.segments || [];
+  const points = data.points || [];
   lastSegs = segs;
+  lastPoints = points;
 
   // Sort: inactive first, active on top
   segs.sort((a, b) => (a.active ? 1 : 0) - (b.active ? 1 : 0));
@@ -379,20 +707,21 @@ function render() {
     ctx.stroke();
   }
 
-  // draw intersection dots on hull
   drawHullDots(segs);
+  drawQueryPoints(points);
 
-  updateSidebar(segs);
+  if (appMode === 'manual') {
+    updateSidebar(segs);
+    updateDotsSidebar(points);
+  }
 }
 
 function drawHullDots(segs) {
   if (!segs) return;
-  // find transition points between active segments of different lines
   const active = segs.filter(s => s.active);
   const color = currentMode === 'max' ? '#ff4d6d' : '#4d9fff';
   const seen = new Set();
   for (const s of active) {
-    // draw dot at start of each active segment boundary
     const pts = [s.from, s.to];
     for (const px of pts) {
       const key = px.toFixed(4);
@@ -408,9 +737,52 @@ function drawHullDots(segs) {
   }
 }
 
+function drawQueryPoints(points) {
+  if (!points || points.length === 0) return;
+  const color = '#4dff91';
+  const glowColor = 'rgba(77,255,145,0.25)';
+
+  for (const pt of points) {
+    const sx = wx(pt.x);
+    const sy = wy(pt.y);
+
+    ctx.beginPath();
+    ctx.arc(sx, sy, 10, 0, Math.PI * 2);
+    ctx.fillStyle = glowColor;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(sx, sy, 6, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(sx, sy, 3, 0, Math.PI * 2);
+    ctx.fillStyle = '#0d0f14';
+    ctx.fill();
+
+    const label = `(${fmt(pt.x)}, ${fmt(pt.y)})`;
+    ctx.font = '10px JetBrains Mono, monospace';
+    const tw = ctx.measureText(label).width;
+    let lx = sx + 10;
+    let ly = sy - 12;
+    if (lx + tw + 4 > W) lx = sx - tw - 14;
+    if (ly < 14) ly = sy + 20;
+
+    ctx.fillStyle = 'rgba(13,15,20,0.85)';
+    ctx.fillRect(lx - 3, ly - 8, tw + 6, 14);
+    ctx.strokeStyle = 'rgba(77,255,145,0.4)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(lx - 3, ly - 8, tw + 6, 14);
+    ctx.fillStyle = color;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, lx, ly);
+  }
+}
+
 function drawGrid() {
   ctx.save();
-  // world extent visible
   const x0w = sw(0), x1w = sw(W);
   const y0w = sh(H), y1w = sh(0);
 
@@ -422,63 +794,45 @@ function drawGrid() {
   ctx.lineWidth = 1;
   ctx.setLineDash([]);
 
-  // vertical lines
   const startX = Math.floor(x0w / step) * step;
   for (let x = startX; x <= x1w + step; x += step) {
     const sx = wx(x);
     ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, H); ctx.stroke();
   }
-  // horizontal lines
   const startY = Math.floor(y0w / step) * step;
   for (let y = startY; y <= y1w + step; y += step) {
     const sy = wy(y);
     ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(W, sy); ctx.stroke();
   }
 
-  // ── Desmos-style: axes stick to viewport edges ──
-  const axisColor = 'rgba(50,58,80,1)';
-  ctx.strokeStyle = axisColor;
+  ctx.strokeStyle = 'rgba(50,58,80,1)';
   ctx.lineWidth = 1.5;
 
-  // Clamp axis positions so they stay visible on screen
-  const axisY = Math.min(Math.max(wy(0), 0), H);   // x-axis screen Y
-  const axisX = Math.min(Math.max(wx(0), 0), W);    // y-axis screen X
+  const axisScreenY = wy(0);
+  const axisScreenX = wx(0);
 
-  // x-axis (horizontal) — always drawn if in vertical range
-  if (wy(0) >= -1 && wy(0) <= H + 1) {
-    ctx.beginPath(); ctx.moveTo(0, axisY); ctx.lineTo(W, axisY); ctx.stroke();
+  const clampedAxisY = Math.min(Math.max(axisScreenY, 0), H);
+  const clampedAxisX = Math.min(Math.max(axisScreenX, 0), W);
+
+  if (axisScreenY >= -1 && axisScreenY <= H + 1) {
+    ctx.beginPath(); ctx.moveTo(0, clampedAxisY); ctx.lineTo(W, clampedAxisY); ctx.stroke();
   }
-  // y-axis (vertical) — always drawn if in horizontal range
-  if (wx(0) >= -1 && wx(0) <= W + 1) {
-    ctx.beginPath(); ctx.moveTo(axisX, 0); ctx.lineTo(axisX, H); ctx.stroke();
+  if (axisScreenX >= -1 && axisScreenX <= W + 1) {
+    ctx.beginPath(); ctx.moveTo(clampedAxisX, 0); ctx.lineTo(clampedAxisX, H); ctx.stroke();
   }
 
-  // ── Tick labels that move with the camera (Desmos-style) ──
-  // Labels stick near the axes, but clamp to viewport edges when axes go off-screen
+  const MARGIN_TOP = 18, MARGIN_BOTTOM = 8, MARGIN_LEFT = 6, MARGIN_RIGHT = 40;
 
-  const MARGIN_TOP = 18;     // minimum px from top edge for x-axis labels
-  const MARGIN_BOTTOM = 8;   // minimum px from bottom edge for x-axis labels
-  const MARGIN_LEFT = 6;     // minimum px from left edge for y-axis labels
-  const MARGIN_RIGHT = 40;   // minimum px from right edge for y-axis labels
-
-  // X-axis tick labels: horizontal position follows the grid, vertical follows the axis
-  ctx.fillStyle = 'rgba(90,99,128,.85)';
   ctx.font = '10px JetBrains Mono, monospace';
+
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
 
-  // Determine the Y position for x-axis labels:
-  // - If axis is on screen: place labels 14px below the axis
-  // - If axis is above viewport: clamp to top edge
-  // - If axis is below viewport: clamp to bottom edge
   let labelY;
-  if (wy(0) >= 0 && wy(0) <= H) {
-    labelY = wy(0) + 14;
-    // If too close to bottom, move above axis instead
-    if (labelY > H - MARGIN_BOTTOM) {
-      labelY = wy(0) - 18;
-    }
-  } else if (wy(0) < 0) {
+  if (axisScreenY >= 0 && axisScreenY <= H) {
+    labelY = axisScreenY + 14;
+    if (labelY > H - MARGIN_BOTTOM) labelY = axisScreenY - 18;
+  } else if (axisScreenY < 0) {
     labelY = MARGIN_TOP;
   } else {
     labelY = H - MARGIN_BOTTOM - 12;
@@ -488,7 +842,6 @@ function drawGrid() {
     if (Math.abs(x) < step * 0.01) continue;
     const sx = wx(x);
     if (sx < 20 || sx > W - 20) continue;
-    // Draw a subtle background for readability
     const txt = fmt(x);
     const tw = ctx.measureText(txt).width;
     ctx.fillStyle = 'rgba(13,15,20,0.7)';
@@ -497,25 +850,15 @@ function drawGrid() {
     ctx.fillText(txt, sx, labelY);
   }
 
-  // Y-axis tick labels: vertical position follows the grid, horizontal follows the axis
   ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';
 
-  // Determine the X position for y-axis labels:
-  // - If axis is on screen: place labels 6px left of the axis
-  // - If axis is left of viewport: clamp to left edge
-  // - If axis is right of viewport: clamp to right edge
   let labelX;
-  if (wx(0) >= 0 && wx(0) <= W) {
-    labelX = wx(0) - 6;
-    // If too close to left, move to right of axis instead
-    if (labelX < MARGIN_LEFT) {
-      labelX = wx(0) + 6;
-      ctx.textAlign = 'left';
-    }
-  } else if (wx(0) < 0) {
-    labelX = MARGIN_LEFT;
-    ctx.textAlign = 'left';
+  if (axisScreenX >= 0 && axisScreenX <= W) {
+    labelX = axisScreenX - 6;
+    if (labelX < MARGIN_LEFT) { labelX = axisScreenX + 6; ctx.textAlign = 'left'; }
+  } else if (axisScreenX < 0) {
+    labelX = MARGIN_LEFT; ctx.textAlign = 'left';
   } else {
     labelX = W - MARGIN_RIGHT;
   }
@@ -524,7 +867,6 @@ function drawGrid() {
     if (Math.abs(y) < step * 0.01) continue;
     const sy = wy(y);
     if (sy < 10 || sy > H - 10) continue;
-    // Draw a subtle background for readability
     const txt = fmt(y);
     const tw = ctx.measureText(txt).width;
     const bgX = ctx.textAlign === 'right' ? labelX - tw - 2 : labelX - 2;
@@ -558,13 +900,11 @@ function computeMaxHull(inputLines) {
   });
   const hull = [];
   for (const x of copy) {
-    while (hull.length > 0 && hull[hull.length - 1].k === x.k)
-      hull.pop();
+    while (hull.length > 0 && hull[hull.length - 1].k === x.k) hull.pop();
     while (hull.length >= 2) {
       const last = hull[hull.length - 1];
       const comparing = hull[hull.length - 2];
-      if (lineIntersection(comparing, x) <= lineIntersection(comparing, last))
-        hull.pop();
+      if (lineIntersection(comparing, x) <= lineIntersection(comparing, last)) hull.pop();
       else break;
     }
     hull.push(x);
@@ -581,13 +921,11 @@ function computeMinHull(inputLines) {
   copy.reverse();
   const hull = [];
   for (const x of copy) {
-    while (hull.length > 0 && hull[hull.length - 1].k === x.k)
-      hull.pop();
+    while (hull.length > 0 && hull[hull.length - 1].k === x.k) hull.pop();
     while (hull.length >= 2) {
       const last = hull[hull.length - 1];
       const comparing = hull[hull.length - 2];
-      if (lineIntersection(comparing, x) <= lineIntersection(comparing, last))
-        hull.pop();
+      if (lineIntersection(comparing, x) <= lineIntersection(comparing, last)) hull.pop();
       else break;
     }
     hull.push(x);
@@ -599,22 +937,17 @@ function computeHullSet() {
   const hullSet = new Set();
   if (lines.length === 0) return hullSet;
   const hull = currentMode === 'max' ? computeMaxHull(lines) : computeMinHull(lines);
-  for (const l of hull) {
-    hullSet.add(`${l.k}|${l.b}`);
-  }
+  for (const l of hull) hullSet.add(`${l.k}|${l.b}`);
   return hullSet;
 }
 
 // ─────────────────────────────────────────────
-// Sidebar: colour items by hull membership
+// Sidebar: lines
 // ─────────────────────────────────────────────
 function updateSidebar(segs) {
-  // Compute hull membership directly from the lines array,
-  // not from segment active flags (which depend on the current
-  // view range and can miss lines when zoomed in).
   const hullSet = computeHullSet();
   lastHullSet = hullSet;
-  const items = document.querySelectorAll('.line-item');
+  const items = document.querySelectorAll('#lines-wrap .line-item');
   items.forEach(item => {
     const k = item.dataset.k, b = item.dataset.b;
     item.classList.remove('hull-max', 'hull-min');
@@ -624,8 +957,25 @@ function updateSidebar(segs) {
   });
 }
 
+function updateDotsSidebar(points) {
+  const items = document.querySelectorAll('#dots-wrap .dot-item');
+  items.forEach(item => {
+    const x = parseFloat(item.dataset.x);
+    const pt = points.find(p => Math.abs(p.x - x) < 1e-9);
+    if (pt !== undefined) {
+      item.classList.add('active-dot');
+      const ySpan = item.querySelector('.dot-y-val');
+      if (ySpan) ySpan.textContent = fmt(pt.y);
+    } else {
+      item.classList.remove('active-dot');
+      const ySpan = item.querySelector('.dot-y-val');
+      if (ySpan) ySpan.textContent = '\u2014';
+    }
+  });
+}
+
 // ─────────────────────────────────────────────
-// Controls
+// Controls (manual mode)
 // ─────────────────────────────────────────────
 function setMode(mode) {
   if (currentMode === mode) return;
@@ -638,6 +988,11 @@ function setMode(mode) {
   const badge = document.getElementById('mode-badge');
   badge.className = 'max' === mode ? 'max' : 'min';
   badge.textContent = mode === 'max' ? 'MAX hull' : 'MIN hull';
+
+  // In DP mode, hull is built differently for max/min — reset and rebuild
+  if (appMode === 'dp') {
+    dpReset();
+  }
 
   render();
 }
@@ -657,6 +1012,20 @@ function addLine() {
   render();
 }
 
+function addDot() {
+  const x = parseFloat(document.getElementById('inp-x').value);
+  if (isNaN(x)) return;
+
+  dots.push({ x });
+  withWasm(() => Module._addDot(x));
+
+  renderDotSidebarItem({ x });
+  document.getElementById('inp-x').value = '';
+  document.getElementById('inp-x').focus();
+
+  render();
+}
+
 function deleteLine(k, b) {
   const idx = lines.findIndex(l => l.k === k && l.b === b);
   if (idx !== -1) lines.splice(idx, 1);
@@ -672,16 +1041,34 @@ function deleteLine(k, b) {
   render();
 }
 
+function deleteDot(x) {
+  const idx = dots.findIndex(d => d.x === x);
+  if (idx !== -1) dots.splice(idx, 1);
+  withWasm(() => Module._remDot(x));
+
+  const item = document.querySelector(`.dot-item[data-x="${x}"]`);
+  if (item) {
+    item.style.opacity = '0';
+    item.style.transform = 'translateX(-10px)';
+    item.style.transition = 'opacity .15s, transform .15s';
+    setTimeout(() => item.remove(), 160);
+  }
+  render();
+}
+
 function clearAll() {
   lines = [];
-  withWasm(() => Module._clearAll());
-  // re-init mode
-  if (currentMode === 'min') {
-    Module._switchMinMax();
-    currentMode = 'max';
-    setMode('max');
-  }
+  dots  = [];
+  // After clearAll, WASM is always in MAX mode (maxIsUsed=true)
+  // Preserve user's mode selection and re-sync WASM
+  const savedMode = currentMode;
+  withWasm(() => {
+    Module._clearAll();
+    // After clearAll, WASM maxIsUsed=true. If user was in MIN, sync WASM to MIN.
+    if (savedMode === 'min') { Module._switchMinMax(); }
+  });
   document.getElementById('lines-wrap').innerHTML = '<div class="lines-label">Lines</div>';
+  document.getElementById('dots-wrap').innerHTML = '<div class="lines-label">Points</div>';
   render();
 }
 
@@ -692,9 +1079,9 @@ function renderSidebarItem(line) {
   el.dataset.k = line.k;
   el.dataset.b = line.b;
 
-  const sign = line.b >= 0 ? '+' : '−';
+  const sign = line.b >= 0 ? '+' : '\u2212';
   const absB = Math.abs(line.b);
-  const kStr = line.k === 0 ? '0' : (line.k === 1 ? '' : line.k === -1 ? '−' : fmt(line.k));
+  const kStr = line.k === 0 ? '0' : (line.k === 1 ? '' : line.k === -1 ? '\u2212' : fmt(line.k));
   const expr = `y = ${kStr}x ${sign} ${fmt(absB)}`;
 
   el.innerHTML = `
@@ -702,7 +1089,23 @@ function renderSidebarItem(line) {
       <div class="line-dot"></div>
       <span class="line-expr">${expr}</span>
     </div>
-    <button class="del-btn" title="Remove" onclick="deleteLine(${line.k}, ${line.b})">×</button>
+    <button class="del-btn" title="Remove" onclick="deleteLine(${line.k}, ${line.b})">\u00d7</button>
+  `;
+  wrap.appendChild(el);
+}
+
+function renderDotSidebarItem(dot) {
+  const wrap = document.getElementById('dots-wrap');
+  const el = document.createElement('div');
+  el.className = 'dot-item';
+  el.dataset.x = dot.x;
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center">
+      <div class="dot-marker"></div>
+      <span class="dot-expr">f(${fmt(dot.x)}) = <span class="dot-y-val">\u2014</span></span>
+    </div>
+    <button class="del-btn" title="Remove" onclick="deleteDot(${dot.x})">\u00d7</button>
   `;
   wrap.appendChild(el);
 }
@@ -729,17 +1132,11 @@ window.addEventListener('mousemove', e => {
   if (mx < 0 || mx > W || my < 0 || my > H) { hideTooltip(); return; }
 
   const wx_ = sw(mx), wy_ = sh(my);
-  // ── tooltip: find closest segment to mouse ──
-  // Only consider segments whose x-range contains the cursor,
-  // so the active/grey status reflects the line's state at THIS x.
-  const HIT_PX = 10; // pixels
+  const HIT_PX = 10;
   let best = null, bestDist = HIT_PX;
 
   for (const seg of lastSegs) {
-    // Skip segments whose x-range does not contain the cursor
     if (wx_ < seg.from - 1e-9 || wx_ > seg.to + 1e-9) continue;
-
-    // y value of this line at cursor x
     const lineY = seg.k * wx_ + seg.b;
     const lineScreenY = wy(lineY);
     const dist = Math.abs(my - lineScreenY);
@@ -747,7 +1144,6 @@ window.addEventListener('mousemove', e => {
       bestDist = dist;
       best = seg;
     } else if (dist < bestDist + 0.5 && seg.active && best && !best.active) {
-      // At intersection points, prefer the active segment when distances are nearly equal
       bestDist = dist;
       best = seg;
     }
@@ -766,7 +1162,6 @@ canvas.addEventListener('wheel', e => {
   const factor = e.deltaY > 0 ? 0.9 : 1.1;
   const rect = canvas.getBoundingClientRect();
   const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-  // zoom toward cursor
   const wx_ = sw(mx), wy_ = sh(my);
   scale *= factor;
   viewX = wx_ - (mx - W/2) / scale;
@@ -780,12 +1175,9 @@ canvas.addEventListener('wheel', e => {
 const tooltipPanel = document.getElementById('tooltip-panel');
 
 function showTooltip(seg, x, y) {
-  // Color based on whether THIS segment is active at the cursor x,
-  // not on overall hull membership. This correctly shows grey when
-  // hovering over the inactive (grey) portion of a hull line.
   const modeColor = currentMode === 'max' ? '#ff4d6d' : '#4d9fff';
   const dotColor  = seg.active ? modeColor : '#505878';
-  const sign = seg.b >= 0 ? '+' : '−';
+  const sign = seg.b >= 0 ? '+' : '\u2212';
   const expr = `y = ${fmt(seg.k)}x ${sign} ${fmt(Math.abs(seg.b))}`;
 
   tooltipPanel.innerHTML = `
@@ -802,12 +1194,749 @@ function hideTooltip() {
 
 canvas.addEventListener('mouseleave', hideTooltip);
 
-// keyboard: Enter to add
+// keyboard: Enter to add (manual mode)
 document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && (document.activeElement === document.getElementById('inp-k') || document.activeElement === document.getElementById('inp-b'))) {
-    addLine();
+  if (e.key === 'Enter') {
+    const active = document.activeElement;
+    if (active === document.getElementById('inp-k') || active === document.getElementById('inp-b')) {
+      addLine();
+    } else if (active === document.getElementById('inp-x')) {
+      addDot();
+    }
   }
 });
+
+
+// ═══════════════════════════════════════════════
+// APP MODE SWITCHER
+// ═══════════════════════════════════════════════
+
+function setAppMode(mode) {
+  if (appMode === mode) return;
+  appMode = mode;
+
+  document.getElementById('btn-manual').classList.toggle('active', mode === 'manual');
+  document.getElementById('btn-dp').classList.toggle('active', mode === 'dp');
+  document.getElementById('manual-panel').style.display = mode === 'manual' ? 'flex' : 'none';
+  document.getElementById('dp-panel').style.display     = mode === 'dp'     ? 'flex' : 'none';
+
+  if (mode === 'dp') {
+    dpReset();
+    // Manual state already cleared by dpReset
+  } else {
+    dpReset();
+    document.getElementById('lines-wrap').innerHTML = '<div class="lines-label">Lines</div>';
+    document.getElementById('dots-wrap').innerHTML = '<div class="lines-label">Points</div>';
+  }
+
+  document.getElementById('step-info').style.display = 'none';
+  render();
+}
+
+
+// ═══════════════════════════════════════════════
+// FORMULA PARSER
+// ═══════════════════════════════════════════════
+
+// Token types
+const T_NUM = 'NUM', T_IDENT = 'IDENT', T_LBRACK = '[', T_RBRACK = ']',
+      T_PLUS = '+', T_MINUS = '-', T_STAR = '*', T_SLASH = '/',
+      T_CARET = '^', T_LPAREN = '(', T_RPAREN = ')', T_EOF = 'EOF';
+
+function tokenize(input) {
+  const tokens = [];
+  let i = 0;
+  while (i < input.length) {
+    const ch = input[i];
+    if (ch === ' ' || ch === '\t') { i++; continue; }
+    if ('0123456789'.includes(ch) || (ch === '.' && i + 1 < input.length && '0123456789'.includes(input[i+1]))) {
+      let num = '';
+      let hasDot = false;
+      while (i < input.length && ('0123456789'.includes(input[i]) || (input[i] === '.' && !hasDot))) {
+        if (input[i] === '.') hasDot = true;
+        num += input[i]; i++;
+      }
+      tokens.push({ type: T_NUM, value: parseFloat(num) });
+    } else if ('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_'.includes(ch)) {
+      let ident = '';
+      while (i < input.length && 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789'.includes(input[i])) {
+        ident += input[i]; i++;
+      }
+      tokens.push({ type: T_IDENT, value: ident });
+    } else if (ch === '[') { tokens.push({ type: T_LBRACK }); i++; }
+    else if (ch === ']') { tokens.push({ type: T_RBRACK }); i++; }
+    else if (ch === '+') { tokens.push({ type: T_PLUS }); i++; }
+    else if (ch === '-') { tokens.push({ type: T_MINUS }); i++; }
+    else if (ch === '*') {
+      if (i + 1 < input.length && input[i+1] === '*') { tokens.push({ type: T_CARET }); i += 2; }
+      else { tokens.push({ type: T_STAR }); i++; }
+    }
+    else if (ch === '/') { tokens.push({ type: T_SLASH }); i++; }
+    else if (ch === '^') { tokens.push({ type: T_CARET }); i++; }
+    else if (ch === '(') { tokens.push({ type: T_LPAREN }); i++; }
+    else if (ch === ')') { tokens.push({ type: T_RPAREN }); i++; }
+    else { throw new Error(`Unexpected character '${ch}' at position ${i}`); }
+  }
+  tokens.push({ type: T_EOF });
+  return tokens;
+}
+
+// AST node constructors
+function numNode(v)  { return { type: 'num', value: v }; }
+function varNode(n)  { return { type: 'var', name: n }; }
+function arrNode(n, idx) { return { type: 'arr', name: n, idx: idx }; }
+function binopNode(op, l, r) { return { type: 'binop', op: op, left: l, right: r }; }
+function negNode(operand)    { return { type: 'neg', operand: operand }; }
+
+// Recursive descent parser
+class Parser {
+  constructor(tokens) { this.tokens = tokens; this.pos = 0; }
+  peek() { return this.tokens[this.pos]; }
+  advance() { return this.tokens[this.pos++]; }
+  expect(type) {
+    const t = this.advance();
+    if (t.type !== type) throw new Error(`Expected ${type}, got ${t.type}`);
+    return t;
+  }
+
+  parse() {
+    const ast = this.expr();
+    if (this.peek().type !== T_EOF) throw new Error('Unexpected token after expression');
+    return ast;
+  }
+
+  // expr → term (('+' | '-') term)*
+  expr() {
+    let left = this.term();
+    while (this.peek().type === T_PLUS || this.peek().type === T_MINUS) {
+      const op = this.advance().type;
+      const right = this.term();
+      left = binopNode(op, left, right);
+    }
+    return left;
+  }
+
+  // term → unary (('*' | '/') unary)*
+  term() {
+    let left = this.unary();
+    while (this.peek().type === T_STAR || this.peek().type === T_SLASH) {
+      const op = this.advance().type;
+      const right = this.unary();
+      left = binopNode(op, left, right);
+    }
+    return left;
+  }
+
+  // unary → '-' unary | power
+  unary() {
+    if (this.peek().type === T_MINUS) {
+      this.advance();
+      return negNode(this.unary());
+    }
+    return this.power();
+  }
+
+  // power → primary ('^' unary)?
+  power() {
+    let base = this.primary();
+    if (this.peek().type === T_CARET) {
+      this.advance();
+      const exp = this.unary();
+      base = binopNode('^', base, exp);
+    }
+    return base;
+  }
+
+  // primary → NUM | IDENT ('[' expr ']')? | '(' expr ')'
+  primary() {
+    const t = this.peek();
+    if (t.type === T_NUM) {
+      this.advance();
+      return numNode(t.value);
+    }
+    if (t.type === T_IDENT) {
+      this.advance();
+      const name = t.value;
+      if (this.peek().type === T_LBRACK) {
+        this.advance(); // consume [
+        const idx = this.expr();
+        this.expect(T_RBRACK);
+        return arrNode(name, idx);
+      }
+      return varNode(name);
+    }
+    if (t.type === T_LPAREN) {
+      this.advance();
+      const inner = this.expr();
+      this.expect(T_RPAREN);
+      return inner;
+    }
+    throw new Error(`Unexpected token: ${t.type} (${t.value || ''})`);
+  }
+}
+
+function parseFormula(input) {
+  if (!input || !input.trim()) return null;
+  try {
+    const tokens = tokenize(input.trim());
+    const parser = new Parser(tokens);
+    return parser.parse();
+  } catch (e) {
+    return null; // parse error
+  }
+}
+
+function evalFormula(ast, ctx) {
+  if (!ast) return NaN;
+  switch (ast.type) {
+    case 'num': return ast.value;
+    case 'var': {
+      if (ast.name === 'i') return ctx.i;
+      if (ast.name === 'j') return ctx.j;
+      // treat as array with implicit [0]? No, error.
+      return NaN;
+    }
+    case 'arr': {
+      const idx = Math.floor(evalFormula(ast.idx, ctx));
+      if (isNaN(idx)) return NaN;
+      const arr = ctx.arrays[ast.name];
+      if (!arr) return NaN;
+      if (idx < 0 || idx >= arr.length) return NaN;
+      return arr[idx];
+    }
+    case 'binop': {
+      const l = evalFormula(ast.left, ctx);
+      const r = evalFormula(ast.right, ctx);
+      if (isNaN(l) || isNaN(r)) return NaN;
+      switch (ast.op) {
+        case '+': return l + r;
+        case '-': return l - r;
+        case '*': return l * r;
+        case '/': return r !== 0 ? l / r : NaN;
+        case '^': return Math.pow(l, r);
+        default: return NaN;
+      }
+    }
+    case 'neg': {
+      const v = evalFormula(ast.operand, ctx);
+      return -v;
+    }
+    default: return NaN;
+  }
+}
+
+// Validate formula in real-time
+function validateFormula(inputEl) {
+  const val = inputEl.value.trim();
+  if (!val) {
+    inputEl.classList.remove('error');
+    return;
+  }
+  const ast = parseFormula(val);
+  if (ast) {
+    inputEl.classList.remove('error');
+  } else {
+    inputEl.classList.add('error');
+  }
+}
+
+
+// ═══════════════════════════════════════════════
+// DP ENGINE
+// ═══════════════════════════════════════════════
+
+const dpEngine = {
+  arrays: {},         // name → {type, values: []}
+  dpName: 'dp',       // name of the dp array
+  currentStep: 0,     // 0 = not started, 1 = added base line, 2 = computed dp[from], ...
+  maxStep: 0,
+  from: 1,
+  to: 4,
+  addedLines: [],     // {k, b, j} — lines added to WASM
+  addedDots: [],      // {x, y, i} — dots queried
+  dpValues: [],       // computed dp values
+  isRunning: false,
+  autoTimer: null,
+  logLines: [],       // step log entries
+};
+
+
+// ─────────────────────────────────────────────
+// DP Arrays UI
+// ─────────────────────────────────────────────
+
+function addDPArray() {
+  const list = document.getElementById('dp-arrays-list');
+  const btn = list.querySelector('.dp-add-array-btn');
+  const idx = list.querySelectorAll('.dp-array-item').length;
+
+  const div = document.createElement('div');
+  div.className = 'dp-array-item';
+  div.innerHTML = `
+    <div class="dp-array-row">
+      <input class="dp-arr-name" value="${idx === 0 ? 'dp' : idx === 1 ? 'a' : 'b'}" onchange="dpArrNameChanged(this)"/>
+      <select class="dp-arr-type" onchange="dpArrTypeChanged(this)">
+        <option value="dp" ${idx === 0 ? 'selected' : ''}>dp</option>
+        <option value="input" ${idx !== 0 ? 'selected' : ''}>input</option>
+        <option value="const">const</option>
+      </select>
+      <button class="del-btn" onclick="removeDPArray(this)">&times;</button>
+    </div>
+    <div class="dp-arr-values-wrap">
+      <input class="dp-arr-values" placeholder="3, 1, 4, 1, 5"/>
+    </div>
+  `;
+  list.insertBefore(div, btn);
+  dpArrTypeChanged(div.querySelector('.dp-arr-type'));
+}
+
+function removeDPArray(btn) {
+  const item = btn.closest('.dp-array-item');
+  item.style.opacity = '0';
+  item.style.transition = 'opacity .15s';
+  setTimeout(() => item.remove(), 160);
+}
+
+function dpArrTypeChanged(selectEl) {
+  const item = selectEl.closest('.dp-array-item');
+  const wrap = item.querySelector('.dp-arr-values-wrap');
+  const type = selectEl.value;
+
+  if (type === 'dp') {
+    wrap.innerHTML = `
+      <div class="dp-arr-base-label">dp[base] =</div>
+      <input class="dp-arr-values" placeholder="0" value="0"/>
+    `;
+  } else if (type === 'const') {
+    wrap.innerHTML = `
+      <input class="dp-arr-values" placeholder="value" value="0"/>
+    `;
+  } else {
+    wrap.innerHTML = `
+      <input class="dp-arr-values" placeholder="3, 1, 4, 1, 5"/>
+    `;
+  }
+}
+
+function dpArrNameChanged(inputEl) {
+  // Just visual, collected on build
+}
+
+
+// ─────────────────────────────────────────────
+// DP Section toggle
+// ─────────────────────────────────────────────
+
+function toggleDpSection(id) {
+  document.getElementById(id).classList.toggle('collapsed');
+}
+
+
+// ─────────────────────────────────────────────
+// DP Build state from UI
+// ─────────────────────────────────────────────
+
+function buildDPState() {
+  const items = document.querySelectorAll('#dp-arrays-list .dp-array-item');
+  const arrays = {};
+  let dpName = null;
+
+  for (const item of items) {
+    const name = item.querySelector('.dp-arr-name').value.trim();
+    const type = item.querySelector('.dp-arr-type').value;
+    const valInput = item.querySelector('.dp-arr-values');
+    const valStr = valInput ? valInput.value.trim() : '';
+
+    if (!name) continue;
+
+    if (type === 'dp') {
+      dpName = name;
+      const baseVal = parseFloat(valStr) || 0;
+      arrays[name] = { type: 'dp', values: [baseVal] };
+    } else if (type === 'const') {
+      const v = parseFloat(valStr) || 0;
+      arrays[name] = { type: 'const', values: [v] };
+    } else {
+      // Parse comma-separated values
+      const vals = valStr.split(',').map(s => parseFloat(s.trim())).filter(v => !isNaN(v));
+      arrays[name] = { type: 'input', values: vals };
+    }
+  }
+
+  const from = parseInt(document.getElementById('dp-from').value) || 1;
+  const to   = parseInt(document.getElementById('dp-to').value)   || 4;
+
+  const queryXStr = document.getElementById('dp-queryX').value.trim();
+  const addStr    = document.getElementById('dp-add').value.trim();
+  const lineKStr  = document.getElementById('dp-line-k').value.trim();
+  const lineBStr  = document.getElementById('dp-line-b').value.trim();
+
+  const queryX = parseFormula(queryXStr);
+  const add    = parseFormula(addStr);
+  const lineK  = parseFormula(lineKStr);
+  const lineB  = parseFormula(lineBStr);
+
+  if (!dpName) return null;
+  if (!queryX) return null;
+  if (!lineK)  return null;
+  if (!lineB)  return null;
+
+  // Merge computed dp values from dpEngine into the dp array
+  if (arrays[dpName] && dpEngine.dpValues.length > 0) {
+    for (const entry of dpEngine.dpValues) {
+      while (arrays[dpName].values.length <= entry.i) arrays[dpName].values.push(NaN);
+      arrays[dpName].values[entry.i] = entry.val;
+    }
+  }
+
+  return { arrays, dpName, from, to, queryX, add, lineK, lineB, queryXStr, addStr, lineKStr, lineBStr };
+}
+
+
+// ─────────────────────────────────────────────
+// DP Step Engine
+// ─────────────────────────────────────────────
+
+function dpReset() {
+  if (dpEngine.autoTimer) { clearInterval(dpEngine.autoTimer); dpEngine.autoTimer = null; }
+  dpEngine.currentStep = 0;
+  dpEngine.maxStep = 0;
+  dpEngine.addedLines = [];
+  dpEngine.addedDots = [];
+  dpEngine.dpValues = [];
+  dpEngine.isRunning = false;
+  dpEngine.logLines = [];
+
+  document.getElementById('dp-auto-btn').classList.remove('playing');
+  document.getElementById('dp-auto-btn').innerHTML = '&#9654; Auto';
+
+  // Clear WASM — after clearAll, WASM is always in MAX mode (maxIsUsed=true)
+  // Preserve user's mode selection and re-sync WASM
+  const savedMode = currentMode;
+  withWasm(() => {
+    Module._clearAll();
+    // After clearAll, WASM maxIsUsed=true. If user was in MIN, sync WASM to MIN.
+    if (savedMode === 'min') { Module._switchMinMax(); }
+  });
+  lines = []; dots = [];
+
+  updateDPResults();
+  updateDPLog();
+  document.getElementById('step-info').style.display = 'none';
+  render();
+}
+
+function dpStepForward() {
+  const state = buildDPState();
+  if (!state) { if (dpEngine.isRunning) dpAutoPlay(); return false; }
+
+  const dpArr = state.arrays[state.dpName];
+  if (!dpArr) { if (dpEngine.isRunning) dpAutoPlay(); return false; }
+
+  // Ensure dp array is long enough
+  while (dpArr.values.length <= state.to + 1) dpArr.values.push(NaN);
+
+  // Calculate max steps: step 0 = add base line, step 1..n = query + add line for i=from..to
+  const totalSteps = (state.to - state.from + 1) + 1; // +1 for base line
+
+  if (dpEngine.currentStep >= totalSteps) return; // done
+
+  const step = dpEngine.currentStep;
+
+  if (step === 0) {
+    // Step 0: Add the base line from dp[from - 1]
+    const baseIdx = state.from - 1;
+    const ctx = { i: baseIdx, j: baseIdx, arrays: {} };
+    // Build arrays context
+    for (const [name, arr] of Object.entries(state.arrays)) {
+      ctx.arrays[name] = arr.values;
+    }
+
+    const k = evalFormula(state.lineK, ctx);
+    const b = evalFormula(state.lineB, ctx);
+
+    if (isNaN(k) || isNaN(b)) {
+      dpEngine.logLines.push({
+        type: 'error',
+        message: `Cannot evaluate line formula at base j=${baseIdx}: k=${k}, b=${b}`
+      });
+      updateDPLog();
+      if (dpEngine.isRunning) dpAutoPlay();
+      return false;
+    }
+
+    // Add to WASM
+    withWasm(() => Module._addLine(k, b));
+    lines.push({ k, b });
+    dpEngine.addedLines.push({ k, b, j: baseIdx });
+
+    dpEngine.logLines.push({
+      type: 'add',
+      j: baseIdx,
+      k, b,
+      kStr: state.lineKStr,
+      bStr: state.lineBStr
+    });
+
+  } else {
+    // Step i: query at queryX(i), compute dp[i], add line
+    const i = state.from + step - 1;
+
+    const ctx = { i, j: i, arrays: {} };
+    for (const [name, arr] of Object.entries(state.arrays)) {
+      ctx.arrays[name] = arr.values;
+    }
+
+    const qx = evalFormula(state.queryX, ctx);
+    if (isNaN(qx)) {
+      dpEngine.logLines.push({
+        type: 'error',
+        message: `Cannot evaluate queryX at i=${i} (index out of bounds?)`
+      });
+      updateDPLog();
+      if (dpEngine.isRunning) dpAutoPlay();
+      return false;
+    }
+
+    // Query WASM
+    let bestY = NaN;
+    withWasm(() => {
+      Module._addDot(qx);
+      const raw = Module.ccall('visualize', 'string', ['number','number'], [qx - 1000, qx + 1000]);
+      try {
+        const data = JSON.parse(raw);
+        const pt = data.points.find(p => Math.abs(p.x - qx) < 1e-6);
+        if (pt) bestY = pt.y;
+      } catch(e) {}
+    });
+
+    if (isNaN(bestY)) {
+      dpEngine.logLines.push({
+        type: 'error',
+        message: `Query returned NaN at x=${qx} (no lines on hull?)`
+      });
+      updateDPLog();
+      if (dpEngine.isRunning) dpAutoPlay();
+      return false;
+    }
+
+    dots.push({ x: qx });
+    dpEngine.addedDots.push({ x: qx, y: bestY, i });
+
+    // Compute dp[i] = bestY + add
+    const addVal = state.add ? evalFormula(state.add, ctx) : 0;
+    const dpI = bestY + (isNaN(addVal) ? 0 : addVal);
+
+    // Update dp array
+    state.arrays[state.dpName].values[i] = dpI;
+    dpEngine.dpValues.push({ i, val: dpI, queryX: qx, bestY, add: addVal });
+
+    // Now add line from j=i
+    const lineCtx = { i, j: i, arrays: {} };
+    for (const [name, arr] of Object.entries(state.arrays)) {
+      lineCtx.arrays[name] = arr.values;
+    }
+
+    const k = evalFormula(state.lineK, lineCtx);
+    const b = evalFormula(state.lineB, lineCtx);
+
+    if (!isNaN(k) && !isNaN(b)) {
+      withWasm(() => Module._addLine(k, b));
+      lines.push({ k, b });
+      dpEngine.addedLines.push({ k, b, j: i });
+
+      dpEngine.logLines.push({
+        type: 'query+add',
+        i,
+        queryX: qx,
+        bestY,
+        add: addVal,
+        dpVal: dpI,
+        k, b,
+        kStr: state.lineKStr,
+        bStr: state.lineBStr,
+        queryXStr: state.queryXStr,
+        addStr: state.addStr
+      });
+    } else {
+      dpEngine.logLines.push({
+        type: 'query',
+        i,
+        queryX: qx,
+        bestY,
+        add: addVal,
+        dpVal: dpI,
+        error: 'Line formula evaluated to NaN'
+      });
+    }
+  }
+
+  dpEngine.currentStep++;
+  dpEngine.maxStep = Math.max(dpEngine.maxStep, dpEngine.currentStep);
+
+  updateDPResults();
+  updateDPLog();
+  updateStepInfo();
+  render();
+  return true;
+}
+
+function dpStepBack() {
+  if (dpEngine.currentStep <= 0) return;
+
+  const targetStep = dpEngine.currentStep - 1;
+
+  // Replay from scratch
+  const savedStep = dpEngine.currentStep;
+  dpReset();
+
+  // We need to rebuild and replay to targetStep
+  // Save the UI values first
+  const state = buildDPState();
+  if (!state) return;
+
+  // Replay all steps up to targetStep
+  for (let s = 0; s < targetStep; s++) {
+    dpStepForward();
+  }
+}
+
+function dpAutoPlay() {
+  if (dpEngine.isRunning) {
+    // Stop
+    clearInterval(dpEngine.autoTimer);
+    dpEngine.autoTimer = null;
+    dpEngine.isRunning = false;
+    document.getElementById('dp-auto-btn').classList.remove('playing');
+    document.getElementById('dp-auto-btn').innerHTML = '&#9654; Auto';
+    return;
+  }
+
+  dpEngine.isRunning = true;
+  document.getElementById('dp-auto-btn').classList.add('playing');
+  document.getElementById('dp-auto-btn').innerHTML = '&#9632; Stop';
+
+  dpEngine.autoTimer = setInterval(() => {
+    const state = buildDPState();
+    if (!state) { dpAutoPlay(); return; }
+    const totalSteps = (state.to - state.from + 1) + 1;
+    if (dpEngine.currentStep >= totalSteps) {
+      dpAutoPlay(); // stop
+      return;
+    }
+    const ok = dpStepForward();
+    if (ok === false) { dpAutoPlay(); return; } // stop on error
+  }, 800);
+}
+
+
+// ─────────────────────────────────────────────
+// DP Results UI
+// ─────────────────────────────────────────────
+
+function updateDPResults() {
+  const list = document.getElementById('dp-results-list');
+
+  // Collect dp array info from UI
+  const state = buildDPState();
+  if (!state) {
+    list.innerHTML = '<div style="font-size:11px;color:var(--text-dim);font-family:JetBrains Mono,monospace">Configure arrays and formulas</div>';
+    return;
+  }
+
+  const dpName = state.dpName;
+  const dpArr = state.arrays[dpName];
+  if (!dpArr) return;
+
+  let html = '';
+  const from = state.from;
+  const to = state.to;
+
+  // Show base value
+  const baseIdx = from - 1;
+  if (baseIdx >= 0 && baseIdx < dpArr.values.length) {
+    const val = dpArr.values[baseIdx];
+    const isComputed = dpEngine.currentStep > 0;
+    const isCurrent = false;
+    html += `<div class="dp-result-item ${isComputed ? 'computed' : ''} ${isCurrent ? 'current' : ''}">
+      <span class="dp-result-idx">${dpName}[${baseIdx}]</span>
+      <span class="dp-result-val">${isNaN(val) ? '?' : fmt(val)}</span>
+    </div>`;
+  }
+
+  for (let i = from; i <= to; i++) {
+    const val = i < dpArr.values.length ? dpArr.values[i] : NaN;
+    const stepIdx = i - from + 1; // which step computes this
+    const isComputed = dpEngine.currentStep > stepIdx;
+    const isCurrent = dpEngine.currentStep === stepIdx;
+
+    html += `<div class="dp-result-item ${isComputed ? 'computed' : ''} ${isCurrent ? 'current' : ''}">
+      <span class="dp-result-idx">${dpName}[${i}]</span>
+      <span class="dp-result-val">${isNaN(val) ? '?' : fmt(val)}</span>
+    </div>`;
+  }
+
+  list.innerHTML = html || '<div style="font-size:11px;color:var(--text-dim);font-family:JetBrains Mono,monospace">No results yet</div>';
+}
+
+function updateDPLog() {
+  const content = document.getElementById('dp-log-content');
+  let html = '';
+
+  for (const entry of dpEngine.logLines) {
+    if (entry.type === 'add') {
+      html += `<div class="dp-log-line"><span class="hl-addline">Add line</span> from j=${entry.j}: <span class="hl-val">y = ${fmt(entry.k)}x + ${fmt(entry.b)}</span></div>`;
+    } else if (entry.type === 'query+add') {
+      html += `<div class="dp-log-line"><span class="hl-query">i=${entry.i}</span> query x=${fmt(entry.queryX)} &rarr; best=<span class="hl-val">${fmt(entry.bestY)}</span></div>`;
+      html += `<div class="dp-log-line">&nbsp;&nbsp;dp[${entry.i}] = ${fmt(entry.bestY)} + ${fmt(entry.add)} = <span class="hl-val">${fmt(entry.dpVal)}</span></div>`;
+      html += `<div class="dp-log-line">&nbsp;&nbsp;<span class="hl-addline">Add line</span> j=${entry.i}: <span class="hl-val">y = ${fmt(entry.k)}x + ${fmt(entry.b)}</span></div>`;
+    } else if (entry.type === 'query') {
+      html += `<div class="dp-log-line"><span class="hl-query">i=${entry.i}</span> query x=${fmt(entry.queryX)} &rarr; best=<span class="hl-val">${fmt(entry.bestY)}</span></div>`;
+      html += `<div class="dp-log-line">&nbsp;&nbsp;dp[${entry.i}] = ${fmt(entry.bestY)} + ${fmt(entry.add)} = <span class="hl-val">${fmt(entry.dpVal)}</span></div>`;
+      if (entry.error) html += `<div class="dp-log-line" style="color:var(--red)">&nbsp;&nbsp;${entry.error}</div>`;
+    } else if (entry.type === 'error') {
+      html += `<div class="dp-log-line" style="color:var(--red)">Error: ${entry.message}</div>`;
+    }
+  }
+
+  content.innerHTML = html || '<div style="color:var(--text-dim)">Run steps to see log</div>';
+  content.scrollTop = content.scrollHeight;
+}
+
+function updateStepInfo() {
+  const el = document.getElementById('step-info');
+  if (dpEngine.logLines.length === 0) {
+    el.style.display = 'none';
+    return;
+  }
+
+  const entry = dpEngine.logLines[dpEngine.logLines.length - 1];
+  let html = '';
+
+  if (entry.type === 'add') {
+    html = `<div class="si-step">Step 0: Initialize</div>
+      <div class="si-line">Add base line from <span class="si-val">j=${entry.j}</span></div>
+      <div class="si-hr"></div>
+      <div class="si-line"><span class="si-addline">Line:</span> <span class="si-val">y = ${fmt(entry.k)}x + ${fmt(entry.b)}</span></div>
+      <div class="si-line" style="color:var(--text-dim)">k = ${entry.kStr} = ${fmt(entry.k)}</div>
+      <div class="si-line" style="color:var(--text-dim)">b = ${entry.bStr} = ${fmt(entry.b)}</div>`;
+  } else if (entry.type === 'query+add' || entry.type === 'query') {
+    html = `<div class="si-step">Step ${entry.i - (parseInt(document.getElementById('dp-from').value) || 1) + 1}: i = ${entry.i}</div>
+      <div class="si-line"><span class="si-query">Query:</span> x = ${entry.queryXStr} = <span class="si-val">${fmt(entry.queryX)}</span></div>
+      <div class="si-line"><span class="si-query">Best:</span> <span class="si-val">${fmt(entry.bestY)}</span></div>
+      <div class="si-hr"></div>
+      <div class="si-line">dp[${entry.i}] = ${fmt(entry.bestY)} + ${fmt(entry.add)} = <span class="si-val">${fmt(entry.dpVal)}</span></div>`;
+    if (entry.k !== undefined) {
+      html += `<div class="si-hr"></div>
+        <div class="si-line"><span class="si-addline">Add line:</span> <span class="si-val">y = ${fmt(entry.k)}x + ${fmt(entry.b)}</span></div>
+        <div class="si-line" style="color:var(--text-dim)">k = ${entry.kStr} = ${fmt(entry.k)}</div>
+        <div class="si-line" style="color:var(--text-dim)">b = ${entry.bStr} = ${fmt(entry.b)}</div>`;
+    }
+  }
+
+  el.innerHTML = html;
+  el.style.display = 'block';
+}
 </script>
 </body>
 </html>

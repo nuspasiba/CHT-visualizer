@@ -16,10 +16,15 @@ struct Line {
     bool operator==(const Line& other) const {
         return k == other.k && b == other.b;
     }
+    
+    long double get(long double x) {
+    	return k * x + b;
+	}
 };
 
 struct LineContainer {
     vector<Line> hullMin, hullMax, allLines;
+    vector <long double> dots;
     bool maxIsUsed = true;
 
     long double intersection(Line a, Line b) {
@@ -71,7 +76,37 @@ struct LineContainer {
         allLines.push_back(newLine);
         updateTheHull();
     }
-
+	
+	void addDot(long double x) {
+		dots.push_back(x);
+	}
+	
+	void remDot(long double x) {
+		for(int i = 0; i < dots.size(); i ++) {
+			if(dots[i] == x) {
+				dots.erase(dots.begin() + i);
+				return;
+			}
+		}
+	}
+	
+	long double getVal(long double x) {
+		if(maxIsUsed) {
+			long double res = -1e18;
+			for(int i = 0; i < hullMax.size(); i ++) {
+				res = max(res, hullMax[i].get(x));
+			}
+			return res;
+		}
+		else{
+			long double res = 1e18;
+			for(int i = 0; i < hullMin.size(); i ++) {
+				res = min(res, hullMin[i].get(x));
+			}
+			return res;
+		}
+	}
+	
     void deleteLine(Line remLine) {
         for(int i = 0; i < allLines.size(); i++) {
             if(allLines[i] == remLine) {
@@ -99,7 +134,8 @@ struct LineContainer {
     }
 
     string output() {
-        string res = "[";
+    	
+        string res = "{\"segments\":[";
         for(int i = 0; i < segments.size(); i++) {
             res += "{";
             res += "\"k\":"    + to_string((double)segments[i].k) + ",";
@@ -111,7 +147,17 @@ struct LineContainer {
             res += "}";
             if(i + 1 < segments.size()) res += ",";
         }
-        res += "]";
+        res += "], \"points\":[";
+        if(!segments.empty()) {
+        	for(int i = 0; i < dots.size(); i ++) { 
+        		long double x = dots[i];
+        		res += "{\"x\":" + to_string((double)x) + ",\"y\":" + to_string((double)getVal(x)) + "}";
+        		if(i + 1 != dots.size()) {
+        			res += ",";
+				}
+			}
+		}
+		res += "]}";
         return res;
     }
 
@@ -159,6 +205,8 @@ extern "C" {
     EXPORT void   deleteLine(double k, double b) { lc.deleteLine({(long double)k, (long double)b}); }
     EXPORT void   switchMinMax()                 { lc.switchMinMax(); }
     EXPORT void   clearAll()                     { lc = LineContainer(); }
+    EXPORT void   addDot(double x)               { lc.addDot(x); } 
+    EXPORT void   remDot(double x)               { lc.remDot(x); } 
 
     EXPORT const char* visualize(double rangeMin, double rangeMax) {
         lastResult = lc.visualize(rangeMin, rangeMax);
