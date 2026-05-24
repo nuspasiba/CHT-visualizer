@@ -1222,6 +1222,11 @@ function setAppMode(mode) {
 
   if (mode === 'dp') {
     dpReset();
+    // Ensure the first dp array exists
+    const list = document.getElementById('dp-arrays-list');
+    if (list.querySelectorAll('.dp-array-item').length === 0) {
+      addDPArray();
+    }
     // Manual state already cleared by dpReset
   } else {
     dpReset();
@@ -1469,29 +1474,39 @@ function addDPArray() {
   const list = document.getElementById('dp-arrays-list');
   const btn = list.querySelector('.dp-add-array-btn');
   const idx = list.querySelectorAll('.dp-array-item').length;
+  const isDpSlot = idx === 0;
 
   const div = document.createElement('div');
   div.className = 'dp-array-item';
+  let typeOptions;
+  if (isDpSlot) {
+    typeOptions = '<select class="dp-arr-type" disabled><option value="dp" selected>dp</option></select>';
+  } else {
+    typeOptions = `<select class="dp-arr-type" onchange="dpArrTypeChanged(this)">
+      <option value="input" selected>input</option>
+      <option value="const">const</option>
+    </select>`;
+  }
+
   div.innerHTML = `
     <div class="dp-array-row">
-      <input class="dp-arr-name" value="${idx === 0 ? 'dp' : idx === 1 ? 'a' : 'b'}" onchange="dpArrNameChanged(this)"/>
-      <select class="dp-arr-type" onchange="dpArrTypeChanged(this)">
-        <option value="dp" ${idx === 0 ? 'selected' : ''}>dp</option>
-        <option value="input" ${idx !== 0 ? 'selected' : ''}>input</option>
-        <option value="const">const</option>
-      </select>
-      <button class="del-btn" onclick="removeDPArray(this)">&times;</button>
+      <input class="dp-arr-name" value="${isDpSlot ? 'dp' : String.fromCharCode(97 + idx - 1)}" onchange="dpArrNameChanged(this)" ${isDpSlot ? 'readonly' : ''}/>
+      ${typeOptions}
+      <button class="del-btn" onclick="removeDPArray(this)" ${isDpSlot ? 'style="visibility:hidden"' : ''}>&times;</button>
     </div>
     <div class="dp-arr-values-wrap">
-      <input class="dp-arr-values" placeholder="3, 1, 4, 1, 5"/>
+      ${isDpSlot ? `<div class="dp-arr-base-label">dp[base] =</div><input class="dp-arr-values" placeholder="0" value="0"/>` : '<input class="dp-arr-values" placeholder="3, 1, 4, 1, 5"/>'}
     </div>
   `;
   list.insertBefore(div, btn);
-  dpArrTypeChanged(div.querySelector('.dp-arr-type'));
 }
 
 function removeDPArray(btn) {
   const item = btn.closest('.dp-array-item');
+  // Don't allow removing the first (dp) array
+  const list = document.getElementById('dp-arrays-list');
+  const allItems = list.querySelectorAll('.dp-array-item');
+  if (allItems.length > 0 && allItems[0] === item) return;
   item.style.opacity = '0';
   item.style.transition = 'opacity .15s';
   setTimeout(() => item.remove(), 160);
@@ -1501,6 +1516,15 @@ function dpArrTypeChanged(selectEl) {
   const item = selectEl.closest('.dp-array-item');
   const wrap = item.querySelector('.dp-arr-values-wrap');
   const type = selectEl.value;
+
+  // Prevent changing the first array away from dp type
+  const list = document.getElementById('dp-arrays-list');
+  const allItems = list.querySelectorAll('.dp-array-item');
+  const isFirst = allItems.length > 0 && allItems[0] === item;
+  if (isFirst && type !== 'dp') {
+    selectEl.value = 'dp';
+    return;
+  }
 
   if (type === 'dp') {
     wrap.innerHTML = `
